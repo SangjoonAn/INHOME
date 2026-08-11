@@ -355,16 +355,34 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
 
     pBuf[index++] = pState->TxMaxGain;
     pBuf[index++] = pState->RxMaxGain;
-    pBuf[index++] = pState->IsolationLevel;
-    pBuf[index++] = pState->IsolationMessage;
+    pBuf[index++] = pState->IsoLevel;
+    pBuf[index++] = pState->IsoMsg;
 
     memcpy(&pBuf[index], pState->SystemRunTime, sizeof(pState->SystemRunTime));
     index += sizeof(pState->SystemRunTime);
 
     pBuf[index++] = pState->Stability;
 
-    memcpy(&pBuf[index], pState->Reserve059, sizeof(pState->Reserve059));
-    index += sizeof(pState->Reserve059);
+    memcpy(&pBuf[index], pState->Reserve060, sizeof(pState->Reserve060));
+    index += sizeof(pState->Reserve060);
+
+    pBuf[index++] = pState->PLLAlarm; 
+    pBuf[index++] = pState->OscOnOff; 
+    pBuf[index++] = pState->Reserve088;
+
+    PutU16BE(&pBuf[index], (u16)pState->UlfbOffset); index += 2;
+
+    memcpy(&pBuf[index], pState->Reserve091, sizeof(pState->Reserve091));
+    index += sizeof(pState->Reserve091);             // 091~092
+
+    pBuf[index++] = pState->OscCheckCount;
+    pBuf[index++] = pState->SdBySd;
+    pBuf[index++] = pState->SdByIso;
+    pBuf[index++] = pState->SdByUe;
+    pBuf[index++] = pState->SignalDetect;
+
+    PutU16BE(&pBuf[index], (u16)pState->SleepValue); 
+    index += 2;   
 
     PutU16BE(&pBuf[index], pState->TxDetVoltage);
     index += 2;
@@ -375,7 +393,7 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     PutU16BE(&pBuf[index], pState->SleepModeVoltage);
     index += 2;
 
-    PutU16BE(&pBuf[index], (u16)pState->TemperatureVoltage);
+    PutU16BE(&pBuf[index], (u16)pState->SysTemper);
     index += 2;
 
     pBuf[index++] = (u8)pState->TxPowerOffsetInput;
@@ -421,8 +439,16 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     pBuf[index++] = (u8)pState->IsolationSetting;
     pBuf[index++] = (u8)pState->OscSetting;
 
-    memcpy(&pBuf[index], pState->Reserve139, sizeof(pState->Reserve139));
-    index += sizeof(pState->Reserve139);    
+    PutU16BE(&pBuf[index], (u16)pState->TxSdTTime); index += 2;
+    PutU16BE(&pBuf[index], (u16)pState->RxSdTTime); index += 2;
+    PutU16BE(&pBuf[index], (u16)pState->UlFbDet); index += 2;
+    pBuf[index++] = (u8)pState->SleepReleaseOffset;
+    pBuf[index++] = pState->TxAlcAtt;
+    pBuf[index++] = pState->RxAlcAtt;
+    pBuf[index++] = pState->SubVersion;
+
+    memcpy(&pBuf[index], pState->Reserve149, sizeof(pState->Reserve149)); 
+    index += sizeof(pState->Reserve149);
 
     return index;
 }

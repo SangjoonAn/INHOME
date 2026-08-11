@@ -108,14 +108,29 @@ typedef struct
     u8 TxMaxGain;
     u8 RxMaxGain;
 
-    u8 IsolationLevel;
-    u8 IsolationMessage;
+    u8 IsoLevel;
+    u8 IsoMsg;
 
     u8 SystemRunTime[5];
 
     u8 Stability;
 
-	u8 Reserve059[40];
+    // 060 ~ 085
+    u8 Reserve060[26]; // 060 ~ 085
+    u8 PLLAlarm; // 086
+    u8 OscOnOff; // 087
+    u8 Reserve088; // 088
+    s16 UlfbOffset; // 089 ~ 090
+
+    // 090 ~ 099
+    u8 Reserve091[2]; // 091 ~ 092
+    u8 OscCheckCount; // 093
+    u8 SdBySd; // 094
+    u8 SdByIso; // 095
+    u8 SdByUe; // 096
+    u8 SignalDetect; // 097
+    s16 SleepValue; // 098 ~ 099
+	//u8 Reserve059[40];
 
 
     // 100~109
@@ -161,7 +176,16 @@ typedef struct
     u8  UlRfSwOnOff;                   // 136
     s8  IsolationSetting;              // 137
     s8  OscSetting;                    // 138
-    u8  Reserve139[20];                    // 139
+
+    s16 TxSdTTime; // 139 ~ 140
+    s16 RxSdTTime; // 141 ~ 142
+    s16 UlFbDet; // 143 ~ 144
+    s8 SleepReleaseOffset; // 145
+    u8 TxAlcAtt; // 146
+    u8 RxAlcAtt; // 147
+    u8 SubVersion; // 148
+
+    u8  Reserve149[11];                    // 139
 } MY_STATE_t;
 #pragma pack(pop)
 

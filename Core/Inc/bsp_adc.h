@@ -20,6 +20,6 @@
 void bsp_adc_init(void);
 void Adc_get_value(void);
 void Adc_Task(void);
-
+void System_TempCheck(void);
 
 #endif /* BSP_ADC_H */

@@ -83,9 +83,9 @@ typedef enum
  * EEPROM initialization.
  *
  * NOTE:
- * MX_I2C1_Init() must be called BEFORE EepInit().
+ * MX_I2C1_Init() must be called BEFORE Eep_Init().
  */
-EEPROM_Status_t EepInit(void);
+EEPROM_Status_t Eep_Init(void);
  
  
 /*

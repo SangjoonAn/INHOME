@@ -358,7 +358,7 @@ EEPROM_Status_t I2C_EE_IsReady(void)
  * EEPROM Initialization
  *
  * IMPORTANT:
- * MX_I2C1_Init() must be called BEFORE EepInit().
+ * MX_I2C1_Init() must be called BEFORE Eep_Init().
  *
  * Example:
  *
@@ -367,10 +367,10 @@ EEPROM_Status_t I2C_EE_IsReady(void)
  *     MX_GPIO_Init();
  *     MX_I2C1_Init();
  *
- *     EepInit();
+ *     Eep_Init();
  * ============================================================ */
  
-EEPROM_Status_t EepInit(void)
+EEPROM_Status_t Eep_Init(void)
 {
     EEPROM_Status_t status;
  
@@ -651,7 +651,7 @@ EEPROM_Status_t I2C_EE_BufferWrite(
  
         if (status != EEPROM_OK)
         {
-            DebugPrint("\r\n[EEPROM] BufferWrite failed @0x%04X",
+            DebugPrint("\r\n[ERR][EEPROM] BufferWrite failed @0x%04X",
                        WriteAddr);
  
             return status;

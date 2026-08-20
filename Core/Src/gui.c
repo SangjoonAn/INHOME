@@ -2,14 +2,16 @@
 #include "project.h"
 #include "bsp_uart.h"
 #include "crc.h"
+#include "table.h"
+#include "utils.h"
+#include "Alarm.h"
 
 GUI_DEV_t GuiProtoDev1, *pGuiProtoDev1;
 static UART_DEV_t  uart1_device = {BSP_UART1_RxDataExist,	BSP_UART1_GetChar, BSP_UART1_Write};
 static u8 Gui_RxMsgBuffer[UART1_FRAME_BUF_SIZE];
 static u8 Gui_TxMsgBuffer[UART1_FRAME_BUF_SIZE];
 
-static u16 GetU16BE(const u8 *p);
-static u32 GetU32BE(const u8 *p);
+
 
 MY_STATE_t      iMySts;
 MY_CONTROL_t    iMyCtrl;
@@ -161,16 +163,49 @@ void GUI_ParserMessage(u8 *pRxMsg, u16 RxLen)
 
     pLine->BodyLen = GetU16BE(&pRxMsg[2]);
 	
-	if(pLine->Cmd==CMD_MAIN_STATUS_REQ){
-		DebugPrint("\r\n %d] CMD_MAIN_STATUS_REQ", HAL_GetTick());
+	if(pLine->Cmd==CMD_MAIN_STATUS){
+		DebugPrint("\r\n %d][GUI] CMD_MAIN_STATUS", HAL_GetTick());
         Gui_SendStatusMessage(pRxMsg);
         return;
 	}		
 	else if(pLine->Cmd==CMD_MAIN_CTRL){
-		DebugPrint("\r\n %d] CMD_MAIN_CTRL", HAL_GetTick());
-        Gui_ControlSet(pRxMsg);
+		DebugPrint("\r\n %d][GUI] CMD_MAIN_CTRL", HAL_GetTick());
+        Gui_SendControlMessage(pRxMsg);
         return;
 	}		
+	else if(pLine->Cmd==CMD_TABLE_STATUS){
+		DebugPrint("\r\n %d][GUI] CMD_TABLE_STATUS", HAL_GetTick());
+        Gui_SendTableStatusMessage(pRxMsg);
+        return;
+	}		
+	else if(pLine->Cmd==CMD_TABLE_SAVE){
+		DebugPrint("\r\n %d][GUI] CMD_TABLE_SAVE", HAL_GetTick());
+        Gui_SendTableSaveMessage(pRxMsg);
+        return;
+	}		
+	else if(pLine->Cmd==CMD_ALARM_LOG_REQ){
+		DebugPrint("\r\n %d][GUI] CMD_ALARM_LOG_REQ", HAL_GetTick());
+        Gui_SendAlarmLogMessage(pRxMsg);
+        return;
+	}		
+	else if(pLine->Cmd==CMD_DOWNLOAD_REQ){
+		DebugPrint("\r\n %d][GUI] CMD_DOWNLOAD_REQ", HAL_GetTick());
+        Gui_SendDownLoadReqMessage(pRxMsg);
+        return;
+    }
+	else if(pLine->Cmd==CMD_DOWNLOAD_DATA){
+		//DebugPrint("\r\n %d][GUI] CMD_DOWNLOAD_DATA", HAL_GetTick());
+        Gui_SendDownLoadDataMessage(pRxMsg);
+        return;
+	}		
+	else if(pLine->Cmd==CMD_DOWNLOAD_CONFIRM){
+		DebugPrint("\r\n %d][GUI] CMD_DOWNLOAD_CONFIRM", HAL_GetTick());
+        Gui_SendDownLoadConfirmMessage(pRxMsg);
+        return;
+	}		
+    else{
+        DebugPrint("\r\n %d][GUI] Another CMD", HAL_GetTick());
+    }
 }
 
 void Gui_SendStatusMessage(u8 *pRxMsg)
@@ -188,10 +223,10 @@ void Gui_SendStatusMessage(u8 *pRxMsg)
     subLen = SerializeMyState(subData, &snapshot);
     
 
-    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_MAIN_STATUS_REQ, subData, subLen);
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_MAIN_STATUS, subData, subLen);
 }
 
-void Gui_ControlSet(u8 *pRxMsg)
+void Gui_SendControlMessage(u8 *pRxMsg)
 {
     GUI_BODY_t      *pLine;
     MY_CONTROL_t	 *CtrlPtr;
@@ -199,7 +234,7 @@ void Gui_ControlSet(u8 *pRxMsg)
     pLine = (GUI_BODY_t *)pRxMsg;
 
     if(pLine->SubLen != sizeof(MY_CONTROL_t)){
-        DebugPrint("\r\n %d] ControlSet Error", HAL_GetTick());
+        DebugPrint("\r\n %d][GUI] ControlSet Error", HAL_GetTick());
         return;
     }
 
@@ -209,23 +244,16 @@ void Gui_ControlSet(u8 *pRxMsg)
     if(CtrlPtr->Control.Flag1.Data){
         if(CtrlPtr->Control.Flag1.Bit.TxAlc){
             iMyCtrl.Control.TxAlc = CtrlPtr->Control.TxAlc;
-            DebugPrint("\r\n %d] TxAlc set to %d", HAL_GetTick(), iMyCtrl.Control.TxAlc);
+            DebugPrint("\r\n %d][GUI] TxAlc set to %d", HAL_GetTick(), iMyCtrl.Control.TxAlc);
         }
     }
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_MAIN_CTRL, (u8 *)&iMyCtrl, sizeof(MY_CONTROL_t));
     
         
-    DebugPrint("\r\n %d] ControlSet OK", HAL_GetTick());
+    DebugPrint("\r\n %d][GUI] ControlSet OK", HAL_GetTick());
 }
 
-void Gui_SendControlMessage(u8 *pRxMsg)
-{
-	GUI_BODY_t  *pLine;
-	pLine = (GUI_BODY_t *)pRxMsg;
-
-    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_MAIN_CTRL, (u8 *)&iMyCtrl, sizeof(MY_CONTROL_t));
-}
 
 void Gui_SendMessage(u8 destId, u8 srcId, u8 cmd, const u8 *pSubData, u16 subLen)
 {
@@ -268,43 +296,261 @@ void Gui_SendMessage(u8 destId, u8 srcId, u8 cmd, const u8 *pSubData, u16 subLen
     pGuiProtoDev1->Uart->Write(Gui_TxMsgBuffer, index);
 
 }
-static void PutU16BE(u8 *p, u16 value)
+
+
+void Gui_SendTableStatusMessage(u8 *pRxMsg)
 {
-    p[0] = (u8)(value >> 8);
-    p[1] = (u8)(value & 0xFF);
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u16 SubDataLength;
+    u8 SubData[TABLE_SUBDATA_SIZE];
+    
+    if(!Table_Get(pLine->SubData[TABLE_SUBDATA_INDEX], SubData, &SubDataLength)){
+        DebugPrint("\r\n[%d][GUI][ERR] Gui_SendTableStatusMessage() Table_Get Fail", HAL_GetTick());
+    }
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_TABLE_STATUS, SubData, SubDataLength);
 }
 
-static void PutU32BE(u8 *p, u32 value)
+//void Gui_SendTableStatusGui_SendTableStatusMessageMessage2(u8 *pRxMsg)
+//{
+//    TABLE_INFO_t *pInfo;
+//	GUI_BODY_t  *pLine;
+//	pLine = (GUI_BODY_t *)pRxMsg;
+//    u16 SubDataLength;
+//    u8 SubData[TABLE_SUBDATA_SIZE];
+//    
+//    pInfo = Table_Get(pLine->SubData[TABLE_SUBDATA_INDEX]);
+//    if(pInfo == NULL){
+//        DebugPrint("\r\n;[%d][ERR] Gui_SendTableStatusMessage pInfo NULL RETURN ", HAL_GetTick());
+//        return;
+//    }
+//
+//    SubData[TABLE_SUBDATA_INDEX] = pLine->SubData[TABLE_SUBDATA_INDEX];
+//    SubData[TABLE_SUBDATA_START] = pInfo->Start;
+//    SubData[TABLE_SUBDATA_LENGTH] = pInfo->Length;   
+//
+//    // Det Test 
+//    //pInfo->Start = 30;
+//    //pInfo->Length = 41;   
+//    //SubData[TABLE_SUBDATA_START] = pInfo->Start;
+//    //SubData[TABLE_SUBDATA_LENGTH] = pInfo->Length;   
+//    //memcpy(pInfo->DataPtr, TxDetAdc, sizeof(TxDetAdc));
+//    //
+//
+//    // Att Test 
+//    //pInfo->Start = 63;
+//    //pInfo->Length = 64;   
+//    //SubData[TABLE_SUBDATA_START] = pInfo->Start;
+//    //SubData[TABLE_SUBDATA_LENGTH] = pInfo->Length;   
+//    //memcpy(pInfo->DataPtr, TxGainAttTableOffset, sizeof(TxGainAttTableOffset));
+//    //
+//
+//    if(pInfo->Length != 0){
+//        if(pInfo->DataSize == DATA_SIZE_2){
+//            Memcpy_U16ToBigEndian(&SubData[TABLE_SUBDATA_DATA], pInfo->DataPtr, pInfo->Length);
+//        }
+//        else if(pInfo->DataSize == DATA_SIZE_1){
+//            memcpy(&SubData[TABLE_SUBDATA_DATA], pInfo->DataPtr, pInfo->Length);
+//        }
+//    }
+//
+//    SubDataLength = (u16)pInfo->Length * pInfo->DataSize + TABLE_SUBDATA_DATA_OFFSET;
+//
+//    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_TABLE_STATUS, SubData, SubDataLength);
+//
+//
+//}
+
+// Rx Data를 수정하고 있음. 수정할것.
+void Gui_SendTableSaveMessage(u8 *pRxMsg)
 {
-    p[0] = (u8)(value >> 24);
-    p[1] = (u8)(value >> 16);
-    p[2] = (u8)(value >> 8);
-    p[3] = (u8)(value & 0xFF);
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u8 TableIndex;
+    u8 Start;
+    u8 Length;
+
+
+    
+    TableIndex = pLine->SubData[TABLE_SUBDATA_INDEX];
+    Start      = pLine->SubData[TABLE_SUBDATA_START];
+    Length     = pLine->SubData[TABLE_SUBDATA_LENGTH];
+
+
+    if(!Table_Save(TableIndex, Start, Length, &pLine->SubData[TABLE_SUBDATA_DATA])){
+        DebugPrint("\r\n[%d][GUI][ERR] Gui_SendTableSaveMessage() Table_Save Fail", HAL_GetTick());
+        return;
+    }
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_TABLE_SAVE, pLine->SubData, pLine->SubLen);
+
 }
 
-static u16 GetU16BE(const u8 *p)
+void Gui_SendAlarmLogMessage(u8 *pRxMsg)
 {
-    return ((u16)p[0] << 8) |
-           ((u16)p[1]);
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u16 Index;
+
+    u8 SubData[ALARM_PACKET_TOTAL_SIZE];
+    u16 SubDataLen;
+
+    memset(SubData, 0, sizeof(SubData));
+
+    Index = pLine->SubData[0] << 8 | pLine->SubData[1];
+
+    /*
+     * ==========================================
+     * Alarm Log Test Data
+     *
+     * Log = Time 5 Byte + Code 1 Byte
+     *       = 6 Byte
+     * ==========================================
+     */
+    //PutU16BE( &SubData[ALARM_PACKET_INDEX_OFFSET], Index);
+
+    /* Power ON Count */
+    //PutU32BE( &SubData[ALARM_PACKET_POWER_ON_OFFSET], 0x00000011UL);
+
+    /* FWD S/D Count */
+    //PutU32BE( &SubData[ALARM_PACKET_FWD_SD_OFFSET], 0x00000022UL);
+
+    /* REV S/D Count */
+    //PutU32BE( &SubData[ALARM_PACKET_REV_SD_OFFSET], 0x00000033UL);
+
+    /* OSC Count */
+    //PutU32BE(&SubData[ALARM_PACKET_OSC_OFFSET], 0x00000044UL);
+    /* Log 0 */
+    //SubData[ALARM_PACKET_LOG_OFFSET + 0] = 0x26;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 1] = 0x08;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 2] = 0x19;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 3] = 0x10;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 4] = 0x30;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 5] = 0x21;
+
+    ///* Log 1 */
+    //SubData[ALARM_PACKET_LOG_OFFSET + 6] = 0x26;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 7] = 0x08;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 8] = 0x19;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 9] = 0x10;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 10] = 0x31;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 11] = 0x22;
+
+    ///* Log 2 */
+    //SubData[ALARM_PACKET_LOG_OFFSET + 12] = 0x26;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 13] = 0x08;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 14] = 0x19;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 15] = 0x10;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 16] = 0x32;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 17] = 0x23;
+
+    ///* Log 3 */
+    //SubData[ALARM_PACKET_LOG_OFFSET + 18] = 0x26;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 19] = 0x08;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 20] = 0x19;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 21] = 0x10;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 22] = 0x33;
+    //SubData[ALARM_PACKET_LOG_OFFSET + 23] = 0x24;
+    ////
+
+    SubDataLen = ALARM_PACKET_TOTAL_SIZE;
+
+
+    Alarm_SendGuiPacket(Index, SubData, &SubDataLen);
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_ALARM_LOG_REQ, SubData, SubDataLen);
+
 }
 
-static u32 GetU32BE(const u8 *p)
+void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
 {
-    return ((u32)p[0] << 24) |
-           ((u32)p[1] << 16) |
-           ((u32)p[2] << 8) |
-           ((u32)p[3]);
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u8 SubData[4];
+    u16 SubDataLen;
+
+    SubDataLen = 4;
+
+    SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
+    SubData[GUI_DOWNLOAD_REQ_CNT_MSB_OFFSET] = pLine->SubData[1];
+    SubData[GUI_DOWNLOAD_REQ_CNT_LSB_OFFSET] = pLine->SubData[2];
+
+    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadReqMessage", HAL_GetTick());
+
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_REQ, SubData, SubDataLen);
+
 }
+
+
+
+void Gui_SendDownLoadDataMessage(u8 *pRxMsg)
+{
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u8 SubData[3];
+    u16 SubDataLen;
+    u16 Cnt = 0;
+
+    SubDataLen = 3;
+
+    Cnt = pLine->SubData[0] << 8 | pLine->SubData[1];
+
+    SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
+    SubData[GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET] = pLine->SubData[0];
+    SubData[GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET] = pLine->SubData[1];
+
+    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadDataMessage - CNT = %d ", HAL_GetTick(), Cnt);
+
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_DATA, SubData, SubDataLen);
+
+}
+
+
+void Gui_SendDownLoadConfirmMessage(u8 *pRxMsg)
+{
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u8 SubData[5];
+    u16 SubDataLen;
+    u16 Cnt = 0;
+    u16 Crc = 0;
+
+    SubDataLen = 5;
+
+    Cnt = pLine->SubData[0] << 8 | pLine->SubData[1];
+    Crc = pLine->SubData[2] << 8 | pLine->SubData[3];
+
+
+    // Test
+    SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
+    SubData[GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET] = pLine->SubData[0];
+    SubData[GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET] = pLine->SubData[1];
+    SubData[3] = pLine->SubData[2];
+    SubData[4] = pLine->SubData[3];
+
+    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadConfirmMessage - CNT = %d ", HAL_GetTick(), Cnt);
+
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_CONFIRM, SubData, SubDataLen);
+
+}
+
+
+
 
 u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
 {
     u16 index = 0;
 
-    pBuf[index++] = pState->Manufacture;
-    pBuf[index++] = pState->Version;
+    pBuf[index++] = pState->RptMaker;
+    pBuf[index++] = pState->McuSwVer;
+    pBuf[index++] = pState->SysTemper;
 
-    memcpy(&pBuf[index], pState->Reserve002, sizeof(pState->Reserve002));
-    index += sizeof(pState->Reserve002);
+    memcpy(&pBuf[index], pState->Reserve003, sizeof(pState->Reserve003));
+    index += sizeof(pState->Reserve003);
 
     pBuf[index++] = pState->Alarm.Data;
 
@@ -358,8 +604,11 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     pBuf[index++] = pState->IsoLevel;
     pBuf[index++] = pState->IsoMsg;
 
-    memcpy(&pBuf[index], pState->SystemRunTime, sizeof(pState->SystemRunTime));
-    index += sizeof(pState->SystemRunTime);
+    pBuf[index++] = pState->SystemRunTime[4];
+    pBuf[index++] = pState->SystemRunTime[3];
+    pBuf[index++] = pState->SystemRunTime[2];
+    pBuf[index++] = pState->SystemRunTime[1];
+    pBuf[index++] = pState->SystemRunTime[0];
 
     pBuf[index++] = pState->Stability;
 
@@ -393,7 +642,7 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     PutU16BE(&pBuf[index], pState->SleepModeVoltage);
     index += 2;
 
-    PutU16BE(&pBuf[index], (u16)pState->SysTemper);
+    PutU16BE(&pBuf[index], (u16)pState->SysTemperVoltage);
     index += 2;
 
     pBuf[index++] = (u8)pState->TxPowerOffsetInput;

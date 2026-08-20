@@ -32,7 +32,7 @@ enum
 	TimerSystemRunTime,
 	TimerAdcTemperature,
 	TimerAdcPowerDetect,
-	Timer_Test,
+	TimerAlarmCheck,
 	TimerDn,
 	TimerFrontLED,		
 	
@@ -129,5 +129,6 @@ void Timer_Task(void);
 u8 bsp_timer_set(u8 TimeId, u32 TimeCnt);
 u8 bsp_timer_TimeOverCheck( u8 TimeId );
 u32 bsp_timer_RemainCheck(u8 TimeId);
+void System_GetTime(u8 *pTime);
 
 #endif /* BSP_TIMER_H */

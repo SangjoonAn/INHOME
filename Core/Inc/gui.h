@@ -5,7 +5,7 @@
 #include "bsp_uart.h"
 #include "project.h"
 
-#define UART1_FRAME_BUF_SIZE    256
+#define UART1_FRAME_BUF_SIZE    0x300
 
 #define SYNC_BYTE       0x16
 
@@ -32,17 +32,28 @@
 #define OFS_SUBDATA     7      // 가변
 
 // CMD Define
-#define CMD_MAIN_STATUS_REQ    0x00
+#define CMD_MAIN_STATUS         0x00
 #define CMD_MAIN_CTRL          0x01
 #define CMD_ALARM_LOG_REQ      0x02
 #define CMD_ALARM_LOG_CLR      0x03
-#define CMD_TABLE_SAVE         0x04
-#define CMD_TABLE_REQ          0x05
-#define CMD_DOWNLOAD_NOTI1     0x06
-#define CMD_DOWNLOAD_NOTI2     0x07
+#define CMD_TABLE_STATUS       0x04
+#define CMD_TABLE_SAVE         0x05
+#define CMD_DOWNLOAD_REQ       0x06
 #define CMD_DOWNLOAD_DATA      0x08
 #define CMD_DOWNLOAD_CONFIRM   0x09
 #define CMD_ERR_RESPONSE       0xFF
+
+
+// Download 관련 
+#define GUI_DOWNLOAD_ACK 0x00U 
+#define GUI_DOWNLOAD_NACK 0x01U
+
+#define GUI_DOWNLOAD_ACK_OFFSET       0x00
+#define GUI_DOWNLOAD_REQ_CNT_MSB_OFFSET   0x02
+#define GUI_DOWNLOAD_REQ_CNT_LSB_OFFSET   0x03
+
+#define GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET   0x01
+#define GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET   0x02
 
 typedef enum {
     GUI_PROTO_STATE_SYNC = 0,
@@ -100,6 +111,7 @@ typedef struct
 } GUI_BODY_t;
 #pragma pack(pop)
 
+
 void Gui_Init(void);
 void Gui_Task(void);
 void Gui_SendMessage(u8 destId, u8 srcId, u8 cmd, const u8 *pSubData, u16 subLen);
@@ -109,4 +121,11 @@ void Gui_SendStatusMessage(u8 *pData);
 void Gui_SendControlMessage(u8 *pData);
 void Gui_ControlSet(u8 *pData);
 u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState);
+void Gui_SendTableStatusMessage(u8 *pRxMsg);
+void Gui_SendTableSaveMessage(u8 *pRxMsg);
+void Gui_SendAlarmLogMessage(u8 *pRxMsg);
+void Gui_SendDownLoadReqMessage(u8 *pRxMsg);
+void Gui_SendDownLoadDataMessage(u8 *pRxMsg);
+void Gui_SendDownLoadConfirmMessage(u8 *pRxMsg);
+
 #endif /* GUI_H */

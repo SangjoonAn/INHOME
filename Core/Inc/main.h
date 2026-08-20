@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -57,8 +59,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_STATE_Pin GPIO_PIN_8
-#define LED_STATE_GPIO_Port GPIOA
+#define LED_TX_Pin GPIO_PIN_8
+#define LED_TX_GPIO_Port GPIOA
+#define LED_POWER_Pin GPIO_PIN_11
+#define LED_POWER_GPIO_Port GPIOA
+#define LED_STATE_Pin GPIO_PIN_1
+#define LED_STATE_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 extern ADC_HandleTypeDef hadc1;
@@ -67,6 +73,8 @@ extern TIM_HandleTypeDef htim3;
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart4;
+
+extern TIM_HandleTypeDef htim1;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

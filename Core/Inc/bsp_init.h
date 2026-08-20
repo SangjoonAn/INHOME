@@ -7,6 +7,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#define MAKER_FRTEK                     0x04
+#define MU_FW_VER    				    0x01
+
+
+
 #define INITCHECKNUM					0x10			//V1030,V1031,V1032
 
 

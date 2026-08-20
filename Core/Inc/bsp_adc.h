@@ -11,15 +11,21 @@
 #define ADC_NUM_TEMPER_DET					    4	
 #define MAX_ADC_NUM                             5
 
-#define MAX_ADC_BUFFER_CNT                       20
+#define MAX_MIN_CLEAR_CNT                       3
+#define MAX_ADC_BUFFER_CNT                      20
 
 
+// VOUT​=424mV+6.25mV×T
 #define TEMPER_0DO		424  
+//  ADC_RBW = (3.3V / 4095(ADC 12bit))
 #define ADC_RBW	        0.805664
 
-void bsp_adc_init(void);
-void Adc_get_value(void);
+void BspAdc_Init(void);
+void BspAdc_GetValue(void);
 void Adc_Task(void);
-void System_TempCheck(void);
+void SystemTemp_Update(void);
+u16 Adc_CalcCleanAverage(u16 *pBuffer);
+void PowerDet_Update(void);
+
 
 #endif /* BSP_ADC_H */

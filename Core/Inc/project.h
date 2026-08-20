@@ -5,7 +5,7 @@
 #include "common.h"
 
 
-extern u32 CurTimerTick;
+extern u32 gCurTimerTick;
 
 
 
@@ -14,9 +14,10 @@ typedef struct
 {
     // 000~009
 
-    u8 Manufacture;
-    u8 Version;
-    u8 Reserve002[3];
+    u8 RptMaker;
+    u8 McuSwVer;
+    u8 SysTemper;
+    u8 Reserve003[2];
 
     union
     {
@@ -138,7 +139,7 @@ typedef struct
     u16 RxDetVoltage;
     u16 SleepModeVoltage;
     s16 SleepModeLimitLevel;         
-    s16 SysTemper;            // 108~109
+    s16 SysTemperVoltage;            // 108~109
 
     // 110~119
     s8  TxPowerOffsetInput;            // 110
@@ -308,7 +309,8 @@ typedef struct
     } Level;
     // 036 ~ 053
     u8 InitCheckNum;
-    u8 Reserved[17];
+    u16 PreAlarmSts;
+    u8 Reserved[15];
     u8 Reserved54[75];
 } MY_CONTROL_t;
 #pragma pack(pop)

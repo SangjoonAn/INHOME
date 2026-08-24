@@ -11,7 +11,21 @@
 #include <string.h>
 
 u16 TxDetAdc[41] = { 3089, 3003, 2917, 2832, 2746, 2661, 2575, 2506, 2436, 2367, 2297, 2228, 2188, 2148, 2109, 2069, 2029, 1990, 1951, 1912, 1873, 1834, 1797, 1760, 1724, 1688, 1652, 1616, 1580, 1544, 1508, 1472, 1436, 1400, 1364, 1328, 1292, 1256, 1220, 1184, 1148 };
-s8  TxGainAttTableOffset[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+u16 RxDetAdc[73] =
+{
+    2541, 2506, 2470, 2434, 2399, 2364, 2328, 2292, 2257, 2220,
+    2183, 2150, 2118, 2078, 2045, 2007, 1976, 1936, 1896, 1854,
+    1813, 1778, 1743, 1706, 1680, 1652, 1625, 1598, 1570, 1543,
+    1515, 1488, 1460, 1433, 1405, 1378, 1350, 1322, 1295, 1268,
+    1240, 1213, 1186, 1159, 1132, 1105, 1078, 1051, 1024, 997,
+    970, 943, 916, 889, 862, 835, 808, 781, 754, 727,
+    700, 673, 646, 619, 592, 565, 538, 511, 484, 457,
+    430, 403, 376
+};
+s8  TxGainAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+s8  TxBalanceAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+s8  RxGainAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+s8  RxBalanceAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
 
 /*===========================================================
  * Global Variables
@@ -25,8 +39,8 @@ TABLE_INFO_LIST_t gTableInfo =
         /* Start, Step, Length, StartAddress, DataSize, DataPtr */
         {0, 1, 0, mTX_DET,              DATA_SIZE_2, (u8 *)gTableData.TxDet        ,0,0,ConvTablePower10},
         {0, 1, 0, mRX_DET,              DATA_SIZE_2, (u8 *)gTableData.RxDet        ,0,0,ConvTablePower10},
-        {0, 1, 0, mSLEEP_DET,           DATA_SIZE_2, (u8 *)gTableData.SleepDet     ,0,0,ConvTablePower10},
-        {0, 1, 0, mRESERVED3,           DATA_SIZE_2, (u8 *)gTableData.Reserved3    ,0,0,ConvTablePower10},
+        {0, 1, 0, mTX_TEMP_ADJ,         DATA_SIZE_2, (u8 *)gTableData.Tx_TempAdj   ,0,0,ConvTablePower10},
+        {0, 1, 0, mRX_TEMP_ADJ,         DATA_SIZE_2, (u8 *)gTableData.Rx_TempAdj   ,0,0,ConvTablePower10},
 
         {0, 1, 0, mTX_GAIN_ATT,         DATA_SIZE_1, gTableData.TxGainAtt          ,0,0,0},
         {0, 1, 0, mTX_BALANCE_ATT,      DATA_SIZE_1, gTableData.TxBalanceAtt       ,0,0,0},
@@ -40,6 +54,23 @@ TABLE_INFO_LIST_t gTableInfo =
         {0, 0, 0, mRESERVED12,          DATA_SIZE_1, 0                              ,0,0,0}
     }
 };
+
+u8 Table_GetDataSize(u8 TableIndex)
+{
+    TABLE_INFO_t *pInfo;
+
+    if (TableIndex >= TABLE_INDEX_COUNT) return FALSE;
+
+    pInfo = &gTableInfo.Table[TableIndex];
+
+    if(pInfo->DataSize == DATA_SIZE_1){
+        return DATA_SIZE_1;
+    }
+    else{
+        return DATA_SIZE_2;
+    }
+}
+
 
 /*===========================================================
  * Load Header
@@ -81,7 +112,6 @@ u8 Table_LoadHeader(u8 TableIndex)
  *
  * 지정한 TableIndex의 Header만 EEPROM에 저장
  *==========================================================*/
-
 u8 Table_SaveHeader(u8 TableIndex)
 {
     TABLE_INFO_t *pInfo;
@@ -138,7 +168,6 @@ u8 Table_LoadData(u8 TableIndex)
 }
 
 
-
 /*===========================================================
  * Load Table
  *
@@ -148,20 +177,20 @@ u8 Table_LoadData(u8 TableIndex)
  *
  * Length만큼 EEPROM에서 RAM으로 읽는다.
  *==========================================================*/
-u8 Table_Get(u8 TableIndex, u8 *pSubData, u16 *pSubDataLength)
+u8 Table_LoadTable(u8 TableIndex, u8 *pSubData, u16 *pSubDataLength)
 {
     TABLE_INFO_t *pInfo;
     u16 DataLength;
 
     if (TableIndex >= TABLE_INDEX_COUNT)
     {
-        DebugPrint("\r\n%d][TABLE][ERR] Table_Get() TableIndex Error",HAL_GetTick());
+        DebugPrint("\r\n%d][TABLE][ERR] Table_LoadTable() TableIndex Error",HAL_GetTick());
         return FALSE;
     }
 
     if ((pSubData == NULL) || (pSubDataLength == NULL))
     {
-        DebugPrint("\r\n[%d][TABLE][ERR] Table_Get() Parameter Error", HAL_GetTick());
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_LoadTable() Parameter Error", HAL_GetTick());
         return FALSE;
     }
 
@@ -169,7 +198,7 @@ u8 Table_Get(u8 TableIndex, u8 *pSubData, u16 *pSubDataLength)
 
     if (pInfo->DataPtr == 0U)
     {
-        DebugPrint("\r\n%d][TABLE][ERR] Table_Get() DataPtr Error",HAL_GetTick());
+        DebugPrint("\r\n%d][TABLE][ERR] Table_LoadTable() DataPtr Error",HAL_GetTick());
         return FALSE;
     }
 
@@ -217,76 +246,7 @@ u8 Table_Get(u8 TableIndex, u8 *pSubData, u16 *pSubDataLength)
  * 그대로 유지한다.
  *==========================================================*/
 
-//u8 Table_Save2(u8 *SubData)
-//{
-//    TABLE_INFO_t *pInfo;
-//    u8  TableIndex;
-//    u8  Start;
-//    u8  Length;
-//    u16 WriteSize;
-//
-//    /*-------------------------------------------------------
-//     * 최소 Header 3 Byte 확인
-//     *------------------------------------------------------*/
-//    if (SubData == NULL) return FALSE;
-//
-//    /*-------------------------------------------------------
-//     * SUB_DATA Header
-//     *------------------------------------------------------*/
-//    TableIndex = SubData[TABLE_SUBDATA_INDEX];
-//    Start      = SubData[TABLE_SUBDATA_START];
-//    Length     = SubData[TABLE_SUBDATA_LENGTH];
-//
-//    /*-------------------------------------------------------
-//     * Table Index 검사
-//     *------------------------------------------------------*/
-//    if (TableIndex >= TABLE_INDEX_COUNT || Length == 0U) return FALSE;
-//
-//
-//    pInfo = &gTableInfo.Table[TableIndex];
-//
-//    if (pInfo->DataPtr == NULL) return FALSE;
-//
-//
-//    /*-------------------------------------------------------
-//     * 실제 Data 크기 계산
-//     *
-//     * DET : Length * 2
-//     * ATT : Length * 1
-//     *------------------------------------------------------*/
-//    WriteSize = (u16)Length * pInfo->DataSize;
-//
-//    /*-------------------------------------------------------
-//     * Data를 RAM Table에 복사
-//     *
-//     * SUB_DATA[3]부터 실제 Table Data
-//     *------------------------------------------------------*/
-//    memcpy(pInfo->DataPtr, &SubData[TABLE_SUBDATA_DATA], WriteSize);
-//
-//    /*-------------------------------------------------------
-//     * RAM -> EEPROM Data 저장
-//     *------------------------------------------------------*/
-//    if (I2C_EE_BufferWrite(pInfo->DataPtr, pInfo->StartAddress, WriteSize) != EEPROM_OK)
-//    {
-//        return FALSE;
-//    }
-//
-//    /*-------------------------------------------------------
-//     * EEPROM Data 저장 성공 후 Header 갱신
-//     *------------------------------------------------------*/
-//    pInfo->Start  = Start;
-//    pInfo->Length = Length;
-//
-//    if (Table_SaveHeader(TableIndex) == FALSE)
-//    {
-//        return FALSE;
-//    }
-//
-//    return TRUE;
-//}
-
- /* pData 데이터는 BigEndian으로 들어옴 */
-u8 Table_Save(u8 TableIndex, u8 Start, u8 Length, const u8 *pData)
+u8 Table_SaveTable(u8 TableIndex, u8 Start, u8 Length, const u8 *pData)
 {
     TABLE_INFO_t *pInfo;
     u16 DataLength;
@@ -314,19 +274,13 @@ u8 Table_Save(u8 TableIndex, u8 Start, u8 Length, const u8 *pData)
  
     DataLength = (u16)Length * pInfo->DataSize;
 
-    if (pInfo->DataSize == DATA_SIZE_2)
-    {
-        Memcpy_BigEndianToU16( (u16 *)pInfo->DataPtr, pData, Length);
-    }
-    else
-    {
-        memcpy(pInfo->DataPtr, pData, Length);
-    }
+
+    memcpy((u8 *)pInfo->DataPtr, pData, DataLength);
 
  
     if (I2C_EE_BufferWrite(pInfo->DataPtr, pInfo->StartAddress, DataLength) != EEPROM_OK)
     {
-        DebugPrint("\r\n[%d][TABLE][ERR] Table_Save Failed", HAL_GetTick());
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_SaveTable Failed", HAL_GetTick());
         return FALSE;
     }
  
@@ -337,8 +291,6 @@ u8 Table_Save(u8 TableIndex, u8 Start, u8 Length, const u8 *pData)
         DebugPrint("\r\n[%d][TABLE][ERR] TableHeader_Save Failed", HAL_GetTick());
         return FALSE;
     }
-
-
 
     return  TRUE;
 }
@@ -351,16 +303,8 @@ void Table_Init(void)
 {
     u8 i;
 
-    /*
-     * 2. RAM Data 초기화
-     */
     memset(&gTableData, 0, sizeof(gTableData));
 
-    /*
-     * 3. EEPROM Header Load
-     *
-     * Start / Length만 읽는다.
-     */
     for (i = 0U; i < TABLE_INDEX_COUNT; i++)
     {
         if(gTableInfo.Table[i].DataPtr != 0){
@@ -373,6 +317,7 @@ void Table_Init(void)
     }
 
 }
+
 
 void ConvTablePower10(u8 TableIndex)
 {
@@ -395,6 +340,7 @@ void ConvTablePower10(u8 TableIndex)
      *------------------------------------------------------*/
     if (TableIndex >= TABLE_INDEX_COUNT)
     {
+        DebugPrint("\r\n[%d][TABLE][ERR] ConvTablePower10() TableIndex(%d) >= TABLE_INDEX_COUNT", HAL_GetTick(), TableIndex);
         return;
     }
 
@@ -406,6 +352,7 @@ void ConvTablePower10(u8 TableIndex)
     if ((pInfo->DataPtr == NULL) || (pInfo->Length == 0U))
     {
         pInfo->MeanData = 0;
+        DebugPrint("\r\n[%d][TABLE][ERR] ConvTablePower10() DataPtr NULL", HAL_GetTick());
         return;
     }
 
@@ -468,12 +415,91 @@ void ConvTablePower10(u8 TableIndex)
     pInfo->MeanData =(StartNum - TableStep + (i * TableStep)) * 10;
 }
 
+// 입력 온도 -> 테이블 시작 온도와 차이 -> 테이블 항목 계산
+s8 Table_GetTempAtt(s8 Temp, u8 TableIndex )
+{
+    s8 Step;
+    u16 Index;
+    TABLE_INFO_t *pInfo;
+
+    pInfo = &gTableInfo.Table[TableIndex];
+
+    /* Table Index 범위 확인 */ 
+    if (TableIndex >= TABLE_INDEX_COUNT){ 
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetTempAtt() TableIndex >= TABLE_INDEX_COUNT", HAL_GetTick());
+        return 0; 
+    }
+
+    if (pInfo->Length == 0U) return 0;
+
+
+    /* 온도 → Table Index 변환 */
+    Temp -= pInfo->Start;
+    Step = pInfo->Step;
+
+    if(Step > 0){
+        Index = Temp / Step;
+    }
+    else Index = 0;
+
+    /* 최소 Index 제한 */
+    if(Index < 0) Index = 0;
+
+    if(Index >= pInfo->Length){
+        Index = pInfo->Length - 1;
+    }
+
+
+    if (pInfo->DataPtr == NULL) return 0;
+
+    return (s8)((u8 *)pInfo->DataPtr)[Index];
+
+}
+
+void Table_SetFactory(void)
+{
+    u8 TableIndex = 0;
+
+    gTableInfo.Table[TableIndex].Start = 30;
+    gTableInfo.Table[TableIndex].Length  = sizeof(TxDetAdc) / DATA_SIZE_2;    
+    Table_SaveTable(TableIndex, gTableInfo.Table[TableIndex].Start, gTableInfo.Table[TableIndex].Length, (u8 *)TxDetAdc);
+    TableIndex++;
+
+    gTableInfo.Table[TableIndex].Start = 54;
+    gTableInfo.Table[TableIndex].Length = sizeof(RxDetAdc) / DATA_SIZE_2;
+    Table_SaveTable(TableIndex, gTableInfo.Table[TableIndex].Start, gTableInfo.Table[TableIndex].Length, (u8 *)RxDetAdc);
+    TableIndex++;
+
+    gTableInfo.Table[TableIndex].Start = 63;
+    gTableInfo.Table[TableIndex].Length = sizeof(TxGainAttTable);
+    Table_SaveTable(TableIndex, gTableInfo.Table[TableIndex].Start, gTableInfo.Table[TableIndex].Length, TxGainAttTable);
+    TableIndex++;
+
+    gTableInfo.Table[TableIndex].Start = 63;
+    gTableInfo.Table[TableIndex].Length = sizeof(TxBalanceAttTable);
+    Table_SaveTable(TableIndex, gTableInfo.Table[TableIndex].Start, gTableInfo.Table[TableIndex].Length, TxBalanceAttTable);
+    TableIndex++;
+
+    gTableInfo.Table[TableIndex].Start = 63;
+    gTableInfo.Table[TableIndex].Length = sizeof(RxGainAttTable);
+    Table_SaveTable(TableIndex, gTableInfo.Table[TableIndex].Start, gTableInfo.Table[TableIndex].Length, RxGainAttTable);
+    TableIndex++;
+
+    gTableInfo.Table[TableIndex].Start = 63;
+    gTableInfo.Table[TableIndex].Length = sizeof(RxBalanceAttTable);
+    Table_SaveTable(TableIndex, gTableInfo.Table[TableIndex].Start, gTableInfo.Table[TableIndex].Length, RxBalanceAttTable);
+
+   
+
+}
+
 u8 Table_SetAdResult(u8 TableIndex, u16 AdResult)
 {
     TABLE_INFO_t *pInfo;
 
     if (TableIndex >= TABLE_INDEX_COUNT)
     {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_SetAdResult() TableIndex(%d) >= TABLE_INDEX_COUNT", HAL_GetTick(), TableIndex);
         return FALSE;
     }
 
@@ -481,6 +507,7 @@ u8 Table_SetAdResult(u8 TableIndex, u16 AdResult)
 
     if (pInfo->DataPtr == NULL)
     {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_SetAdResult() DataPtr NULL", HAL_GetTick());
         return FALSE;
     }
 
@@ -489,6 +516,9 @@ u8 Table_SetAdResult(u8 TableIndex, u16 AdResult)
     if (pInfo->AdConvertMean != NULL)
     {
         pInfo->AdConvertMean(TableIndex);
+    }
+    else{
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_SetAdResult() AdConvertMean NULL", HAL_GetTick());
     }
 
     return TRUE;

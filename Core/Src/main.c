@@ -128,7 +128,7 @@ int main(void)
   Gui_Init();
   Eep_Init();
   Alarm_Init();
-  SystemDataRestore();
+  Init_DataRestore();
   
   /* USER CODE END 2 */
 

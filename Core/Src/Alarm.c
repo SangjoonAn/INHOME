@@ -10,6 +10,7 @@
 #include "bsp_timer.h"
 #include "bsp_eep.h"
 #include "bsp_init.h"
+#include "bsp_uart.h"
 
 ALARM_STATE_t gAlarm;
 
@@ -354,6 +355,8 @@ u8 Alarm_GetLogBlockAddress(u16 Index, u16 *pAddress)
 
     if (Index >= ALARM_LOG_TOTAL_COUNT)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_GetLogBlockAddress Block(%d) >= ALARM_LOG_TOTAL_BLOCK", HAL_GetTick(), Block);
+
         return FALSE;
     }
 
@@ -361,13 +364,13 @@ u8 Alarm_GetLogBlockAddress(u16 Index, u16 *pAddress)
 
     if (Block >= ALARM_LOG_TOTAL_BLOCK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_GetLogBlockAddress Block(%d) >= ALARM_LOG_TOTAL_BLOCK", HAL_GetTick(), Block);
         return FALSE;
     }
 
     *pAddress = g_AlarmLogAddress[Block];
 
-    *pAddress +=
-        (Index % ALARM_LOG_COUNT) * ALARM_LOG_ENTRY_SIZE;
+    *pAddress += (Index % ALARM_LOG_COUNT) * ALARM_LOG_ENTRY_SIZE;
 
     return TRUE;
 }
@@ -383,8 +386,10 @@ void Alarm_LogSave(u8 AlarmCode)
 
     if (AlarmCode == 0xFFU)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogSave AlarmCode = 0xFF", HAL_GetTick());
         return;
     }
+
     memset(&Log, 0, sizeof(Log));
 
     System_GetTime(Log.Time);
@@ -392,11 +397,13 @@ void Alarm_LogSave(u8 AlarmCode)
 
     if (!Alarm_GetLogBlockAddress(gAlarm.LogIndex, &Address))
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogSave gAlarm.LogIndex = %d , Addr = %x", HAL_GetTick(), gAlarm.LogIndex, Address);
         return;
     }
 
     if (I2C_EE_BufferWrite((u8 *)&Log, Address, ALARM_LOG_ENTRY_SIZE) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogSave I2C_EE_BufferWrite ", HAL_GetTick());
         return;
     }
 
@@ -421,19 +428,19 @@ u8 Alarm_LogRead(u16 Index, ALARM_LOG_t *pLog)
 
     if (pLog == NULL)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogRead pLog NULL Error ", HAL_GetTick());
         return FALSE;
     }
 
     if (!Alarm_GetLogBlockAddress(Index, &Address))
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogRead Alarm_GetLogBlockAddress Error ", HAL_GetTick());
         return FALSE;
     }
 
-    if (I2C_EE_BufferRead(
-            (u8 *)pLog,
-            Address,
-            ALARM_LOG_ENTRY_SIZE) != EEPROM_OK)
+    if (I2C_EE_BufferRead((u8 *)pLog, Address, ALARM_LOG_ENTRY_SIZE) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogRead I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
@@ -447,33 +454,58 @@ u8 Alarm_LogRead(u16 Index, ALARM_LOG_t *pLog)
 
 u8 Alarm_LogClear(void)
 {
-    /*
-     * 600 byte를 Stack에 잡지 않는다.
-     */
     static u8 ClearBuffer[ALARM_LOG_BLOCK_SIZE];
 
     memset(ClearBuffer, 0xFF, sizeof(ClearBuffer));
 
     for (u8 i = 0U; i < ALARM_LOG_TOTAL_BLOCK; i++)
     {
-        if (I2C_EE_BufferWrite(
-                ClearBuffer,
-                g_AlarmLogAddress[i],
-                ALARM_LOG_BLOCK_SIZE) != EEPROM_OK)
+        if (I2C_EE_BufferWrite(ClearBuffer, g_AlarmLogAddress[i], ALARM_LOG_BLOCK_SIZE) != EEPROM_OK)
         {
+            DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogClear I2C_EE_BufferWrite Error ", HAL_GetTick());
             return FALSE;
         }
     }
 
     gAlarm.LogIndex = 0U;
-
-    if (I2C_EE_BufferWrite(
-            (u8 *)&gAlarm.LogIndex,
-            ALARM_LOG_WRITE_INDEX_ADDR,
-            sizeof(gAlarm.LogIndex)) != EEPROM_OK)
+    if (I2C_EE_BufferWrite((u8 *)&gAlarm.LogIndex, ALARM_LOG_WRITE_INDEX_ADDR, sizeof(gAlarm.LogIndex)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogClear I2C_EE_BufferWrite Error ", HAL_GetTick());
         return FALSE;
     }
+
+    gAlarm.PowerOnCount = 0U;
+    if (I2C_EE_BufferWrite((u8 *)&gAlarm.PowerOnCount, ALARM_LOG_POWER_ON_ADDR, sizeof(gAlarm.PowerOnCount)) != EEPROM_OK)
+    {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogClear I2C_EE_BufferWrite Error ", HAL_GetTick());
+        return FALSE;
+    }
+
+    gAlarm.FwdSDCount = 0U;
+    if (I2C_EE_BufferWrite((u8 *)&gAlarm.FwdSDCount, ALARM_LOG_FWD_SD_COUNT_ADDR, sizeof(gAlarm.FwdSDCount)) != EEPROM_OK)
+    {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogClear I2C_EE_BufferWrite Error ", HAL_GetTick());
+        return FALSE;
+    }
+
+    gAlarm.RevSDCount = 0U;
+    if (I2C_EE_BufferWrite((u8 *)&gAlarm.RevSDCount, ALARM_LOG_REV_SD_COUNT_ADDR, sizeof(gAlarm.RevSDCount)) != EEPROM_OK)
+    {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogClear I2C_EE_BufferWrite Error ", HAL_GetTick());
+        return FALSE;
+    }
+
+    gAlarm.OscCount = 0U;
+    if (I2C_EE_BufferWrite((u8 *)&gAlarm.OscCount, ALARM_LOG_OSC_COUNT_ADDR, sizeof(gAlarm.OscCount)) != EEPROM_OK)
+    {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_LogClear I2C_EE_BufferWrite Error ", HAL_GetTick());
+        return FALSE;
+    }
+
+
+
+
+
 
     return TRUE;
 }
@@ -487,21 +519,25 @@ u8 Alarm_CountReadAll(void)
 
     if(I2C_EE_BufferRead((u8 *)&gAlarm.PowerOnCount, ALARM_LOG_POWER_ON_ADDR, sizeof(gAlarm.PowerOnCount)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountReadAll I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
     if(I2C_EE_BufferRead((u8 *)&gAlarm.FwdSDCount, ALARM_LOG_FWD_SD_COUNT_ADDR, sizeof(gAlarm.FwdSDCount)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountReadAll I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
     if(I2C_EE_BufferRead((u8 *)&gAlarm.RevSDCount, ALARM_LOG_REV_SD_COUNT_ADDR, sizeof(gAlarm.RevSDCount)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountReadAll I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
     if(I2C_EE_BufferRead((u8 *)&gAlarm.OscCount, ALARM_LOG_OSC_COUNT_ADDR, sizeof(gAlarm.OscCount)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountReadAll I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
@@ -545,6 +581,7 @@ u8 Alarm_CountRead(u8 Index)
 
     if (I2C_EE_BufferRead((u8 *)pData, Address, sizeof(u32)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountRead I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
@@ -563,6 +600,7 @@ u8 Alarm_CountSave(u8 Index)
         case ALARM_COUNT_INDEX_POWER_ON:
             Address = ALARM_LOG_POWER_ON_ADDR;
             if(I2C_EE_BufferWrite((u8 *)&gAlarm.PowerOnCount, Address, sizeof(gAlarm.PowerOnCount)) != EEPROM_OK){
+                DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountSave I2C_EE_BufferWrite Error ", HAL_GetTick());
                 return FALSE;
             }
             break;
@@ -570,6 +608,7 @@ u8 Alarm_CountSave(u8 Index)
         case ALARM_COUNT_INDEX_FWD_SD:
             Address = ALARM_LOG_FWD_SD_COUNT_ADDR;
             if(I2C_EE_BufferWrite((u8 *)&gAlarm.FwdSDCount, Address, sizeof(gAlarm.FwdSDCount)) != EEPROM_OK){
+                DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountSave I2C_EE_BufferWrite Error ", HAL_GetTick());
                 return FALSE;
             }
             break;
@@ -577,6 +616,7 @@ u8 Alarm_CountSave(u8 Index)
         case ALARM_COUNT_INDEX_REV_SD:
             Address = ALARM_LOG_REV_SD_COUNT_ADDR;
             if(I2C_EE_BufferWrite((u8 *)&gAlarm.RevSDCount, Address, sizeof(gAlarm.RevSDCount)) != EEPROM_OK){
+                DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountSave I2C_EE_BufferWrite Error ", HAL_GetTick());
                 return FALSE;
             }
             break;
@@ -584,6 +624,7 @@ u8 Alarm_CountSave(u8 Index)
         case ALARM_COUNT_INDEX_OSC:
             Address = ALARM_LOG_OSC_COUNT_ADDR;
             if(I2C_EE_BufferWrite((u8 *)&gAlarm.OscCount, Address, sizeof(gAlarm.OscCount)) != EEPROM_OK){
+                DebugPrint("\r\n %d][ALARM][ERR] Alarm_CountSave I2C_EE_BufferWrite Error ", HAL_GetTick());
                 return FALSE;
             }
             break;
@@ -626,17 +667,39 @@ u32 Alarm_CountGet(u32 Index)
 
 u8 Alarm_SendGuiPacket(u16 Index, u8 *pData, u16 *pLength)
 {
-    u16 Address;
+    u16 Address; 
+    u16 LogCount; 
+    u16 LogDataLength; 
+    u16 DataLength;
 
     if ((pData == NULL) || (pLength == NULL))
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_SendGuiPacket NULL data", HAL_GetTick());
         return FALSE;
     }
 
-    if (!Alarm_GetLogBlockAddress(Index, &Address)) 
-    {
+    if ((Index % ALARM_LOG_COUNT) != 0U){ 
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_SendGuiPacket Index Error = %d", HAL_GetTick(), Index);
+        return FALSE; 
+    }
+
+    if(Index >= gAlarm.LogIndex){
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_SendGuiPacket Index(%d) >= gAlarm.LogIndex(%d) Error ", HAL_GetTick(), Index, gAlarm.LogIndex);
         return FALSE;
     }
+
+   if (!Alarm_GetLogBlockAddress(Index, &Address)) 
+    {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_SendGuiPacket Alarm_GetLogBlockAddress Error ", HAL_GetTick());
+        return FALSE;
+    }
+
+    LogCount = gAlarm.LogIndex - Index;
+    if (LogCount > ALARM_LOG_COUNT){ 
+        LogCount = ALARM_LOG_COUNT; 
+    }
+
+    LogDataLength = (gAlarm.LogIndex - Index) * ALARM_LOG_TOTAL_BLOCK;    
 
     PutU16BE(&pData[ALARM_PACKET_INDEX_OFFSET], Index);
 
@@ -648,12 +711,15 @@ u8 Alarm_SendGuiPacket(u16 Index, u8 *pData, u16 *pLength)
 
     PutU32BE(&pData[ALARM_PACKET_OSC_OFFSET], gAlarm.OscCount);
 
-    if (I2C_EE_BufferRead( &pData[ALARM_PACKET_LOG_OFFSET], Address, ALARM_PACKET_DATA_SIZE) != EEPROM_OK)
+    if (I2C_EE_BufferRead( &pData[ALARM_PACKET_LOG_OFFSET], Address, LogDataLength) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] Alarm_SendGuiPacket I2C_EE_BufferRead Error ", HAL_GetTick());
         return FALSE;
     }
 
-    *pLength = ALARM_PACKET_TOTAL_SIZE;
+    DataLength = LogDataLength + ALARM_PACKET_LOG_OFFSET;    
+
+    *pLength = DataLength;
 
     return TRUE ;
 

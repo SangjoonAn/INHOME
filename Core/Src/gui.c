@@ -5,6 +5,7 @@
 #include "table.h"
 #include "utils.h"
 #include "Alarm.h"
+#include "Down.h"
 
 GUI_DEV_t GuiProtoDev1, *pGuiProtoDev1;
 static UART_DEV_t  uart1_device = {BSP_UART1_RxDataExist,	BSP_UART1_GetChar, BSP_UART1_Write};
@@ -73,11 +74,11 @@ static void Gui_RecvMessage(GUI_DEV_t *pDev)
             case GUI_PROTO_STATE_BODY:
                 if(pDev->MsgRecvStep < pDev->MsgBuffSize)
                 {
-                    if(pDev->MsgRecvStep == 1)
+                    if(pDev->MsgRecvStep == OFS_MSB_BODY_LENGTH)
                     {
                         pDev->BodyLen = ((u16)code << 8);
                     }
-                    else if(pDev->MsgRecvStep == 2)
+                    else if(pDev->MsgRecvStep == OFS_LSB_BODY_LENGTH)
                     {
                         pDev->BodyLen |= code;
 
@@ -88,7 +89,6 @@ static void Gui_RecvMessage(GUI_DEV_t *pDev)
                             break;
                         }
                     }
-
 
                     pDev->pMsgBuffer[pDev->MsgRecvStep++] = code;
 
@@ -161,8 +161,9 @@ void GUI_ParserMessage(u8 *pRxMsg, u16 RxLen)
 	GUI_BODY_t  *pLine;
 	pLine = (GUI_BODY_t *)pRxMsg;
 
-    pLine->BodyLen = GetU16BE(&pRxMsg[2]);
-	
+    pLine->SubLen |= (pRxMsg[OFS_MSB_SUB_DATA_LENGTH] << 8);
+    pLine->SubLen |= pRxMsg[OFS_LSB_SUB_DATA_LENGTH];
+
 	if(pLine->Cmd==CMD_MAIN_STATUS){
 		DebugPrint("\r\n %d][GUI] CMD_MAIN_STATUS", HAL_GetTick());
         Gui_SendStatusMessage(pRxMsg);
@@ -186,6 +187,11 @@ void GUI_ParserMessage(u8 *pRxMsg, u16 RxLen)
 	else if(pLine->Cmd==CMD_ALARM_LOG_REQ){
 		DebugPrint("\r\n %d][GUI] CMD_ALARM_LOG_REQ", HAL_GetTick());
         Gui_SendAlarmLogMessage(pRxMsg);
+        return;
+	}		
+	else if(pLine->Cmd==CMD_ALARM_LOG_CLR){
+		DebugPrint("\r\n %d][GUI] CMD_ALARM_LOG_CLR", HAL_GetTick());
+        Gui_ClearAlarmLogMessage(pRxMsg);
         return;
 	}		
 	else if(pLine->Cmd==CMD_DOWNLOAD_REQ){
@@ -229,22 +235,259 @@ void Gui_SendStatusMessage(u8 *pRxMsg)
 void Gui_SendControlMessage(u8 *pRxMsg)
 {
     GUI_BODY_t      *pLine;
-    MY_CONTROL_t	 *CtrlPtr;
+    MY_CONTROL_t	 *pCtrl;
 
     pLine = (GUI_BODY_t *)pRxMsg;
 
+    /*
     if(pLine->SubLen != sizeof(MY_CONTROL_t)){
         DebugPrint("\r\n %d][GUI] ControlSet Error", HAL_GetTick());
         return;
     }
+    */
 
 
-    CtrlPtr = (MY_CONTROL_t *)pLine->SubData;
+    pCtrl = (MY_CONTROL_t *)pLine->SubData;
 
-    if(CtrlPtr->Control.Flag1.Data){
-        if(CtrlPtr->Control.Flag1.Bit.TxAlc){
-            iMyCtrl.Control.TxAlc = CtrlPtr->Control.TxAlc;
-            DebugPrint("\r\n %d][GUI] TxAlc set to %d", HAL_GetTick(), iMyCtrl.Control.TxAlc);
+    //입력값 검증할것.
+    // 입력값 범위 설정할것.
+    if(pCtrl->Flag1.Data){
+        if(pCtrl->Flag1.Bit.TxAlc){
+            iMyCtrl.TxAlc = pCtrl->TxAlc;
+            SystemDataItemWrite(iMyCtrl.TxAlc);
+            iMySts.Flag1.Bit.TxAlc = iMyCtrl.TxAlc;
+            DebugPrint("\r\n %d][GUI] TxAlc set to %d", HAL_GetTick(), iMyCtrl.TxAlc);
+        }
+        if(pCtrl->Flag1.Bit.RxAlc){
+            iMyCtrl.RxAlc = pCtrl->RxAlc;
+            SystemDataItemWrite(iMyCtrl.RxAlc);
+            iMySts.Flag1.Bit.RxAlc = iMyCtrl.RxAlc;
+            DebugPrint("\r\n %d][GUI] RxAlc set to %d", HAL_GetTick(), iMyCtrl.RxAlc);
+        }
+        if(pCtrl->Flag1.Bit.TxShutdown){
+            iMyCtrl.TxShutdown = pCtrl->TxShutdown;
+            SystemDataItemWrite(iMyCtrl.TxShutdown);
+            iMySts.Flag1.Bit.TxShutdown = iMyCtrl.TxShutdown;
+            DebugPrint("\r\n %d][GUI] TxShutdown set to %d", HAL_GetTick(), iMyCtrl.TxShutdown);
+        }
+        if(pCtrl->Flag1.Bit.RxShutdown){
+            iMyCtrl.RxShutdown = pCtrl->RxShutdown;
+            SystemDataItemWrite(iMyCtrl.RxShutdown);
+            iMySts.Flag1.Bit.RxShutdown = iMyCtrl.RxShutdown;
+            DebugPrint("\r\n %d][GUI] RxShutdown set to %d", HAL_GetTick(), iMyCtrl.RxShutdown);
+        }
+        if(pCtrl->Flag1.Bit.IsoCheck){
+            iMyCtrl.IsoCheck = pCtrl->IsoCheck;
+            SystemDataItemWrite(iMyCtrl.IsoCheck);
+            iMySts.Flag2.Bit.IsoCheck = iMyCtrl.IsoCheck;
+            DebugPrint("\r\n %d][GUI] IsoCheck set to %d", HAL_GetTick(), iMyCtrl.IsoCheck);
+        }
+        if(pCtrl->Flag1.Bit.IsoReCheck){
+            iMyCtrl.IsoReCheck = pCtrl->IsoReCheck;
+            SystemDataItemWrite(iMyCtrl.IsoReCheck);
+            iMySts.Flag2.Bit.IsoReCheck = iMyCtrl.IsoReCheck;
+            DebugPrint("\r\n %d][GUI] IsoReCheck set to %d", HAL_GetTick(), iMyCtrl.IsoReCheck);
+        }
+    }
+
+    if(pCtrl->Flag2.Data){
+        if(pCtrl->Flag2.Bit.TxPath){
+            iMyCtrl.TxPath = pCtrl->TxPath;
+            SystemDataItemWrite(iMyCtrl.TxPath);
+            iMySts.Flag2.Bit.TxPath = iMyCtrl.TxPath;
+            DebugPrint("\r\n %d][GUI] TxPath set to %d", HAL_GetTick(), iMyCtrl.TxPath);
+        }
+        if(pCtrl->Flag2.Bit.RxPath){
+            iMyCtrl.RxPath = pCtrl->RxPath;
+            SystemDataItemWrite(iMyCtrl.RxPath);
+            iMySts.Flag2.Bit.RxPath = iMyCtrl.RxPath;
+            DebugPrint("\r\n %d][GUI] RxPath set to %d", HAL_GetTick(), iMyCtrl.RxPath);
+        }
+        if(pCtrl->Flag2.Bit.SystemReset){
+            if(pCtrl->SystemReset){
+                Alarm_LogSave(ALARM_CODE_RESET_USER);            
+                Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_MAIN_CTRL, (u8 *)&iMyCtrl, sizeof(MY_CONTROL_t));
+                DebugPrint("\r\n %d][GUI] SystemReset ", HAL_GetTick());
+                HAL_Delay(500);
+                Init_SwReset();
+            }
+
+        }
+        if(pCtrl->Flag2.Bit.IsoLimitRun){
+            iMyCtrl.IsoLimitRun = pCtrl->IsoLimitRun;
+            SystemDataItemWrite(iMyCtrl.IsoLimitRun);
+            iMySts.Flag2.Bit.IsoLimitRun = iMyCtrl.IsoLimitRun;
+            DebugPrint("\r\n %d][GUI] IsoLimitRun set to %d", HAL_GetTick(), iMyCtrl.IsoLimitRun);
+        }
+    }
+
+    if(pCtrl->Flag3.Data){
+        if(pCtrl->Flag3.Bit.TxGainAtt){
+            iMyCtrl.TxGainAtt = pCtrl->TxGainAtt;
+            SystemDataItemWrite(iMyCtrl.TxGainAtt);
+            iMySts.TxGainAtt = iMyCtrl.TxGainAtt;
+            DebugPrint("\r\n %d][GUI] TxGainAtt set to %d", HAL_GetTick(), iMyCtrl.TxGainAtt);
+        }
+        if(pCtrl->Flag3.Bit.RxGainAtt){
+            iMyCtrl.RxGainAtt = pCtrl->RxGainAtt;
+            SystemDataItemWrite(iMyCtrl.RxGainAtt);
+            iMySts.RxGainAtt = iMyCtrl.RxGainAtt;
+            DebugPrint("\r\n %d][GUI] RxGainAtt set to %d", HAL_GetTick(), iMyCtrl.RxGainAtt);
+        }
+        if(pCtrl->Flag3.Bit.TxLinkBalanceAtt){
+            iMyCtrl.TxLinkBalanceAtt = pCtrl->TxLinkBalanceAtt;
+            SystemDataItemWrite(iMyCtrl.TxLinkBalanceAtt);
+            iMySts.TxLinkBalanceAtt = iMyCtrl.TxLinkBalanceAtt;
+            DebugPrint("\r\n %d][GUI] TxLinkBalanceAtt set to %d", HAL_GetTick(), iMyCtrl.TxLinkBalanceAtt);
+        }
+        if(pCtrl->Flag3.Bit.RxLinkBalanceAtt){
+            iMyCtrl.RxLinkBalanceAtt = pCtrl->RxLinkBalanceAtt;
+            SystemDataItemWrite(iMyCtrl.RxLinkBalanceAtt);
+            iMySts.RxLinkBalanceAtt = iMyCtrl.RxLinkBalanceAtt;
+            DebugPrint("\r\n %d][GUI] RxLinkBalanceAtt set to %d", HAL_GetTick(), iMyCtrl.RxLinkBalanceAtt);
+        }
+        if(pCtrl->Flag3.Bit.IsoAtt){
+            iMyCtrl.IsoAtt = pCtrl->IsoAtt;
+            SystemDataItemWrite(iMyCtrl.IsoAtt);
+            iMySts.IsoAtt = iMyCtrl.IsoAtt;
+            DebugPrint("\r\n %d][GUI] IsoAtt set to %d", HAL_GetTick(), iMyCtrl.IsoAtt);
+        }
+    }
+
+    if(pCtrl->Flag4.Data){
+        if(pCtrl->Flag4.Bit.TxShutdownLimit){
+            iMyCtrl.TxShutdownLimit = pCtrl->TxShutdownLimit;
+            SystemDataItemWrite(iMyCtrl.TxShutdownLimit);
+            iMySts.TxShutdownLimit = iMyCtrl.TxShutdownLimit;
+            DebugPrint("\r\n %d][GUI] TxShutdownLimit set to %d", HAL_GetTick(), iMyCtrl.TxShutdownLimit);
+        }
+        if(pCtrl->Flag4.Bit.RxShutdownLimit){
+            iMyCtrl.RxShutdownLimit = pCtrl->RxShutdownLimit;
+            SystemDataItemWrite(iMyCtrl.RxShutdownLimit);
+            iMySts.RxShutdownLimit = iMyCtrl.RxShutdownLimit;
+            DebugPrint("\r\n %d][GUI] RxShutdownLimit set to %d", HAL_GetTick(), iMyCtrl.RxShutdownLimit);
+        }
+        if(pCtrl->Flag4.Bit.TxAlcHighLevel){
+            iMyCtrl.TxAlcHighLevel = pCtrl->TxAlcHighLevel;
+            SystemDataItemWrite(iMyCtrl.TxAlcHighLevel);
+            iMySts.TxAlcHighLevel = iMyCtrl.TxAlcHighLevel;
+            DebugPrint("\r\n %d][GUI] TxAlcHighLevel set to %d", HAL_GetTick(), iMyCtrl.TxAlcHighLevel);
+        }
+        if(pCtrl->Flag4.Bit.RxAlcHighLevel){
+            iMyCtrl.RxAlcHighLevel = pCtrl->RxAlcHighLevel;
+            SystemDataItemWrite(iMyCtrl.RxAlcHighLevel);
+            iMySts.RxAlcHighLevel = iMyCtrl.RxAlcHighLevel;
+            DebugPrint("\r\n %d][GUI] RxAlcHighLevel set to %d", HAL_GetTick(), iMyCtrl.RxAlcHighLevel);
+        }
+        if(pCtrl->Flag4.Bit.TxAlcLowOffset){
+            iMyCtrl.TxAlcLowOffset = pCtrl->TxAlcLowOffset;
+            SystemDataItemWrite(iMyCtrl.TxAlcLowOffset);
+            iMySts.TxAlcLowOffset = iMyCtrl.TxAlcLowOffset;
+            DebugPrint("\r\n %d][GUI] TxAlcLowOffset set to %d", HAL_GetTick(), iMyCtrl.TxAlcLowOffset);
+        }
+        if(pCtrl->Flag4.Bit.RxAlcLowOffset){
+            iMyCtrl.RxAlcLowOffset = pCtrl->RxAlcLowOffset;
+            SystemDataItemWrite(iMyCtrl.RxAlcLowOffset);
+            iMySts.RxAlcLowOffset = iMyCtrl.RxAlcLowOffset;
+            DebugPrint("\r\n %d][GUI] RxAlcLowOffset set to %d", HAL_GetTick(), iMyCtrl.RxAlcLowOffset);
+        }
+    }
+
+    if(pCtrl->Flag5.Data){
+        if(pCtrl->Flag5.Bit.TxPowerOffsetInput){
+            iMyCtrl.TxPowerOffsetInput = pCtrl->TxPowerOffsetInput;
+            SystemDataItemWrite(iMyCtrl.TxPowerOffsetInput);
+            iMySts.TxPowerOffsetInput = iMyCtrl.TxPowerOffsetInput;
+            DebugPrint("\r\n %d][GUI] TxPowerOffsetInput set to %d", HAL_GetTick(), iMyCtrl.TxPowerOffsetInput);
+        }
+        if(pCtrl->Flag5.Bit.TxPowerOffsetOutput){
+            iMyCtrl.TxPowerOffsetOutput = pCtrl->TxPowerOffsetOutput;
+            SystemDataItemWrite(iMyCtrl.TxPowerOffsetOutput);
+            iMySts.TxPowerOffsetOutput = iMyCtrl.TxPowerOffsetOutput;
+            DebugPrint("\r\n %d][GUI] TxPowerOffsetOutput set to %d", HAL_GetTick(), iMyCtrl.TxPowerOffsetOutput);
+        }
+        if(pCtrl->Flag5.Bit.RxPowerOffsetInput){
+            iMyCtrl.RxPowerOffsetInput = pCtrl->RxPowerOffsetInput;
+            SystemDataItemWrite(iMyCtrl.RxPowerOffsetInput);
+            iMySts.RxPowerOffsetInput = iMyCtrl.RxPowerOffsetInput;
+            DebugPrint("\r\n %d][GUI] RxPowerOffsetInput set to %d", HAL_GetTick(), iMyCtrl.RxPowerOffsetInput);
+        }
+        if(pCtrl->Flag5.Bit.RxPowerOffsetOutput){
+            iMyCtrl.RxPowerOffsetOutput = pCtrl->RxPowerOffsetOutput;
+            SystemDataItemWrite(iMyCtrl.RxPowerOffsetOutput);
+            iMySts.RxPowerOffsetOutput = iMyCtrl.RxPowerOffsetOutput;
+            DebugPrint("\r\n %d][GUI] RxPowerOffsetOutput set to %d", HAL_GetTick(), iMyCtrl.RxPowerOffsetOutput);
+        }
+        if(pCtrl->Flag5.Bit.TemperatureComp){
+            iMyCtrl.TemperatureComp = pCtrl->TemperatureComp;
+            SystemDataItemWrite(iMyCtrl.TemperatureComp);
+            DebugPrint("\r\n %d][GUI] TemperatureComp set to %d", HAL_GetTick(), iMyCtrl.TemperatureComp);
+        }
+        if(pCtrl->Flag5.Bit.TemperatureOffset){
+            iMyCtrl.TemperatureOffset = pCtrl->TemperatureOffset;
+            SystemDataItemWrite(iMyCtrl.TemperatureOffset);
+            DebugPrint("\r\n %d][GUI] TemperatureOffset set to %d", HAL_GetTick(), iMyCtrl.TemperatureOffset);
+        }
+        if(pCtrl->Flag5.Bit.TxAttGainOffset){
+            iMyCtrl.TxAttGainOffset = pCtrl->TxAttGainOffset;
+            SystemDataItemWrite(iMyCtrl.TxAttGainOffset);
+            iMySts.TxAttGainOffset = iMyCtrl.TxAttGainOffset;
+            DebugPrint("\r\n %d][GUI] TxAttGainOffset set to %d", HAL_GetTick(), iMyCtrl.TxAttGainOffset);
+        }
+    }
+
+    if(pCtrl->Flag6.Data){
+        if(pCtrl->Flag6.Bit.RxAttIsoOffset){
+            iMyCtrl.RxAttIsoOffset = pCtrl->RxAttIsoOffset;
+            SystemDataItemWrite(iMyCtrl.RxAttIsoOffset);
+            iMySts.RxAttIsoOffset = iMyCtrl.RxAttIsoOffset;
+            DebugPrint("\r\n %d][GUI] RxAttIsoOffset set to %d", HAL_GetTick(), iMyCtrl.RxAttIsoOffset);
+        }
+        if(pCtrl->Flag6.Bit.IsoSet){
+            iMyCtrl.IsoSet = pCtrl->IsoSet;
+            SystemDataItemWrite(iMyCtrl.IsoSet);
+            iMySts.IsoSet = iMyCtrl.IsoSet;
+            DebugPrint("\r\n %d][GUI] IsoSet set to %d", HAL_GetTick(), iMyCtrl.IsoSet);
+        }
+        if(pCtrl->Flag6.Bit.OscSet){
+            iMyCtrl.OscSet = pCtrl->OscSet;
+            SystemDataItemWrite(iMyCtrl.OscSet);
+            iMySts.OscSet = iMyCtrl.OscSet;
+            DebugPrint("\r\n %d][GUI] OscSet set to %d", HAL_GetTick(), iMyCtrl.OscSet);
+        }
+        if(pCtrl->Flag6.Bit.TxSdTime){
+            iMyCtrl.TxSdTime = pCtrl->TxSdTime;
+            SystemDataItemWrite(iMyCtrl.TxSdTime);
+            iMySts.TxSdTime = iMyCtrl.TxSdTime;
+            DebugPrint("\r\n %d][GUI] TxSdTime set to %d", HAL_GetTick(), iMyCtrl.TxSdTime);
+        }
+        if(pCtrl->Flag6.Bit.RxSdTime){
+            iMyCtrl.RxSdTime = pCtrl->RxSdTime;
+            SystemDataItemWrite(iMyCtrl.RxSdTime);
+            iMySts.RxSdTime = iMyCtrl.RxSdTime;
+            DebugPrint("\r\n %d][GUI] RxSdTime set to %d", HAL_GetTick(), iMyCtrl.RxSdTime);
+        }
+    }
+
+
+    if(pCtrl->Flag7.Data){
+        if(pCtrl->Flag7.Bit.TxAlcAtt){
+            iMyCtrl.TxAlcAtt = pCtrl->TxAlcAtt;
+            SystemDataItemWrite(iMyCtrl.TxAlcAtt);
+            iMySts.TxAlcAtt = iMyCtrl.TxAlcAtt;
+            DebugPrint("\r\n %d][GUI] TxAlcAtt set to %d", HAL_GetTick(), iMyCtrl.TxAlcAtt);
+        }
+        if(pCtrl->Flag7.Bit.RxAlcAtt){
+            iMyCtrl.RxAlcAtt = pCtrl->RxAlcAtt;
+            SystemDataItemWrite(iMyCtrl.RxAlcAtt);
+            iMySts.RxAlcAtt = iMyCtrl.RxAlcAtt;
+            DebugPrint("\r\n %d][GUI] RxAlcAtt set to %d", HAL_GetTick(), iMyCtrl.RxAlcAtt);
+        }
+        if(pCtrl->Flag7.Bit.OscOnOff){
+            iMyCtrl.OscOnOff = pCtrl->OscOnOff;
+            SystemDataItemWrite(iMyCtrl.OscOnOff);
+            iMySts.OscOnOff = iMyCtrl.OscOnOff;
+            DebugPrint("\r\n %d][GUI] OscOnOff set to %d", HAL_GetTick(), iMyCtrl.OscOnOff);
         }
     }
 
@@ -303,66 +546,19 @@ void Gui_SendTableStatusMessage(u8 *pRxMsg)
 	GUI_BODY_t  *pLine;
 	pLine = (GUI_BODY_t *)pRxMsg;
     u16 SubDataLength;
-    u8 SubData[TABLE_SUBDATA_SIZE];
+    u8 SubData[GUI_TABLE_SUBDATA_SIZE];
     
-    if(!Table_Get(pLine->SubData[TABLE_SUBDATA_INDEX], SubData, &SubDataLength)){
-        DebugPrint("\r\n[%d][GUI][ERR] Gui_SendTableStatusMessage() Table_Get Fail", HAL_GetTick());
+
+
+    if(!Table_LoadTable(pLine->SubData[GUI_TABLE_SUBDATA_INDEX], SubData, &SubDataLength)){
+        DebugPrint("\r\n[%d][GUI][ERR] Gui_SendTableStatusMessage() Table_LoadTable Fail", HAL_GetTick());
+        return;
     }
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_TABLE_STATUS, SubData, SubDataLength);
 }
 
-//void Gui_SendTableStatusGui_SendTableStatusMessageMessage2(u8 *pRxMsg)
-//{
-//    TABLE_INFO_t *pInfo;
-//	GUI_BODY_t  *pLine;
-//	pLine = (GUI_BODY_t *)pRxMsg;
-//    u16 SubDataLength;
-//    u8 SubData[TABLE_SUBDATA_SIZE];
-//    
-//    pInfo = Table_Get(pLine->SubData[TABLE_SUBDATA_INDEX]);
-//    if(pInfo == NULL){
-//        DebugPrint("\r\n;[%d][ERR] Gui_SendTableStatusMessage pInfo NULL RETURN ", HAL_GetTick());
-//        return;
-//    }
-//
-//    SubData[TABLE_SUBDATA_INDEX] = pLine->SubData[TABLE_SUBDATA_INDEX];
-//    SubData[TABLE_SUBDATA_START] = pInfo->Start;
-//    SubData[TABLE_SUBDATA_LENGTH] = pInfo->Length;   
-//
-//    // Det Test 
-//    //pInfo->Start = 30;
-//    //pInfo->Length = 41;   
-//    //SubData[TABLE_SUBDATA_START] = pInfo->Start;
-//    //SubData[TABLE_SUBDATA_LENGTH] = pInfo->Length;   
-//    //memcpy(pInfo->DataPtr, TxDetAdc, sizeof(TxDetAdc));
-//    //
-//
-//    // Att Test 
-//    //pInfo->Start = 63;
-//    //pInfo->Length = 64;   
-//    //SubData[TABLE_SUBDATA_START] = pInfo->Start;
-//    //SubData[TABLE_SUBDATA_LENGTH] = pInfo->Length;   
-//    //memcpy(pInfo->DataPtr, TxGainAttTableOffset, sizeof(TxGainAttTableOffset));
-//    //
-//
-//    if(pInfo->Length != 0){
-//        if(pInfo->DataSize == DATA_SIZE_2){
-//            Memcpy_U16ToBigEndian(&SubData[TABLE_SUBDATA_DATA], pInfo->DataPtr, pInfo->Length);
-//        }
-//        else if(pInfo->DataSize == DATA_SIZE_1){
-//            memcpy(&SubData[TABLE_SUBDATA_DATA], pInfo->DataPtr, pInfo->Length);
-//        }
-//    }
-//
-//    SubDataLength = (u16)pInfo->Length * pInfo->DataSize + TABLE_SUBDATA_DATA_OFFSET;
-//
-//    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_TABLE_STATUS, SubData, SubDataLength);
-//
-//
-//}
 
-// Rx Data를 수정하고 있음. 수정할것.
 void Gui_SendTableSaveMessage(u8 *pRxMsg)
 {
 	GUI_BODY_t  *pLine;
@@ -370,16 +566,23 @@ void Gui_SendTableSaveMessage(u8 *pRxMsg)
     u8 TableIndex;
     u8 Start;
     u8 Length;
-
-
+    u8 DataSize;
+    u8 SubData[GUI_TABLE_SUBDATA_SIZE];
     
-    TableIndex = pLine->SubData[TABLE_SUBDATA_INDEX];
-    Start      = pLine->SubData[TABLE_SUBDATA_START];
-    Length     = pLine->SubData[TABLE_SUBDATA_LENGTH];
+    TableIndex = pLine->SubData[GUI_TABLE_SUBDATA_INDEX];
+    Start      = pLine->SubData[GUI_TABLE_SUBDATA_START];
+    Length     = pLine->SubData[GUI_TABLE_SUBDATA_LENGTH];
+    DataSize   = Table_GetDataSize(TableIndex);
 
+    if(DataSize == DATA_SIZE_2){
+        Memcpy_BigEndianToU16( (u16 *)SubData, &pLine->SubData[GUI_TABLE_SUBDATA_DATA], Length);
+    }
+    else{
+        memcpy(SubData, &pLine->SubData[GUI_TABLE_SUBDATA_DATA], Length);
+    }
 
-    if(!Table_Save(TableIndex, Start, Length, &pLine->SubData[TABLE_SUBDATA_DATA])){
-        DebugPrint("\r\n[%d][GUI][ERR] Gui_SendTableSaveMessage() Table_Save Fail", HAL_GetTick());
+    if(!Table_SaveTable(TableIndex, Start, Length, SubData)){
+        DebugPrint("\r\n[%d][GUI][ERR] Gui_SendTableSaveMessage() Table_SaveTable Fail", HAL_GetTick());
         return;
     }
 
@@ -457,9 +660,31 @@ void Gui_SendAlarmLogMessage(u8 *pRxMsg)
     SubDataLen = ALARM_PACKET_TOTAL_SIZE;
 
 
-    Alarm_SendGuiPacket(Index, SubData, &SubDataLen);
+    if(Alarm_SendGuiPacket(Index, SubData, &SubDataLen) == FALSE){
+        DebugPrint("\r\n %d][GUI][ERR] Gui_SendAlarmLogMessage ", HAL_GetTick());
+        return;
+    }
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_ALARM_LOG_REQ, SubData, SubDataLen);
+
+}
+
+void Gui_ClearAlarmLogMessage(u8 *pRxMsg)
+{
+	GUI_BODY_t  *pLine;
+	pLine = (GUI_BODY_t *)pRxMsg;
+    u16 Index;
+
+    u8 SubData[4];
+    u16 SubDataLen;
+
+    memset(SubData, 0, sizeof(SubData));
+    SubDataLen = 0;
+
+    Alarm_LogClear();
+    
+
+    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_ALARM_LOG_CLR, SubData, SubDataLen);
 
 }
 
@@ -476,14 +701,16 @@ void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
     SubData[GUI_DOWNLOAD_REQ_CNT_MSB_OFFSET] = pLine->SubData[1];
     SubData[GUI_DOWNLOAD_REQ_CNT_LSB_OFFSET] = pLine->SubData[2];
 
-    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadReqMessage", HAL_GetTick());
+    if(Down_DownloadStart() == FALSE){
+        DebugPrint("\r\n %d][GUI][ERR] Gui_SendDownLoadReqMessage Down_DownloadStart ERR", HAL_GetTick());
+        // GUI Send 추가
+        return;
+    }
 
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_REQ, SubData, SubDataLen);
 
 }
-
-
 
 void Gui_SendDownLoadDataMessage(u8 *pRxMsg)
 {
@@ -491,17 +718,19 @@ void Gui_SendDownLoadDataMessage(u8 *pRxMsg)
 	pLine = (GUI_BODY_t *)pRxMsg;
     u8 SubData[3];
     u16 SubDataLen;
-    u16 Cnt = 0;
+    u16 FrameNum = 0;
+    u16 FrameLength = 0;
 
     SubDataLen = 3;
 
-    Cnt = pLine->SubData[0] << 8 | pLine->SubData[1];
+    FrameNum = pLine->SubData[0] << 8 | pLine->SubData[1];
+    FrameLength = GetU16BE((u8*)pLine->SubLen);
 
     SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
     SubData[GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET] = pLine->SubData[0];
     SubData[GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET] = pLine->SubData[1];
 
-    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadDataMessage - CNT = %d ", HAL_GetTick(), Cnt);
+    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadDataMessage - FrameNum = %d ", HAL_GetTick(), FrameNum);
 
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_DATA, SubData, SubDataLen);
@@ -556,8 +785,8 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
 
     pBuf[index++] = pState->Reserve006;
 
-    pBuf[index++] = pState->Control1.Data;
-    pBuf[index++] = pState->Control2.Data;
+    pBuf[index++] = pState->Flag1.Data;
+    pBuf[index++] = pState->Flag2.Data;
 
     pBuf[index++] = pState->Reserve009;
 
@@ -683,13 +912,13 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     pBuf[index++] = (u8)pState->RxAttBalanceTotal;
     pBuf[index++] = (u8)pState->RxAttIsoTotal;
 
-    pBuf[index++] = pState->UlRfSwOnOff;
+    pBuf[index++] = pState->UlRfSw;
 
-    pBuf[index++] = (u8)pState->IsolationSetting;
-    pBuf[index++] = (u8)pState->OscSetting;
+    pBuf[index++] = (u8)pState->IsoSet;
+    pBuf[index++] = (u8)pState->OscSet;
 
-    PutU16BE(&pBuf[index], (u16)pState->TxSdTTime); index += 2;
-    PutU16BE(&pBuf[index], (u16)pState->RxSdTTime); index += 2;
+    PutU16BE(&pBuf[index], (u16)pState->TxSdTime); index += 2;
+    PutU16BE(&pBuf[index], (u16)pState->RxSdTime); index += 2;
     PutU16BE(&pBuf[index], (u16)pState->UlFbDet); index += 2;
     pBuf[index++] = (u8)pState->SleepReleaseOffset;
     pBuf[index++] = pState->TxAlcAtt;

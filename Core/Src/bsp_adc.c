@@ -67,11 +67,12 @@ void PowerDet_Update(void)
     u16 AdResult;
 
     AdResult = Adc_CalcCleanAverage(gAdc_Buffer[ADC_NUM_TX_DET]);
+    iMySts.TxDetVoltage = AdResult;
     Table_SetAdResult(ADC_NUM_TX_DET, AdResult);
-    
 
     AdResult = Adc_CalcCleanAverage(gAdc_Buffer[ADC_NUM_RX_DET]);
-    Table_SetAdResult(ADC_NUM_RX_DET, AdResult);
+    iMySts.RxDetVoltage = AdResult;    
+    Table_SetAdResult(ADC_NUM_RX_DET, AdResult);   
 
 }
 

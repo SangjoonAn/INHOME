@@ -599,10 +599,7 @@ EEPROM_Status_t I2C_EE_PageWrite(
  *   2nd write: 128 ~ 199 (72 bytes)
  * ============================================================ */
  
-EEPROM_Status_t I2C_EE_BufferWrite(
-        uint8_t *pBuffer,
-        uint16_t WriteAddr,
-        uint16_t NumByteToWrite)
+EEPROM_Status_t I2C_EE_BufferWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16_t NumByteToWrite )
 {
     EEPROM_Status_t status;
  

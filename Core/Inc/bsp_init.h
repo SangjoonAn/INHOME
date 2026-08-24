@@ -21,5 +21,7 @@
 #define ExtE2pmapTableStartAddr							0x0700
 
 void OpLedToggle(void);
-void SystemDataRestore(void);
+void Init_DataRestore(void);
+void Init_SwReset(void);
+void Init_ResetCheck(void);
 #endif

@@ -24,11 +24,19 @@
 #define GUI_CALC_RXLEN(bodyLen)       (GUI_TOTAL_FRAME_LEN(bodyLen) - CRC_LEN)  // "HEADER_LEN+BodyLen-2"
 #define GUI_TOTAL_FRAME_LEN(bodyLen)    (HEADER_LEN + (bodyLen))
 
+// Body  오프셋
+#define OFS_SOURCE_ID               0
+#define OFS_MSB_BODY_LENGTH         1
+#define OFS_LSB_BODY_LENGTH         2
+#define OFS_DEST_ID                 3
+#define OFS_CMD                     7
+#define OFS_RCODE                   8
+#define OFS_MSB_SUB_DATA_LENGTH     9
+#define OFS_LSB_SUB_DATA_LENGTH     10
 // Body 내부 오프셋
 #define OFS_RESERVED    0      // 3 byte
 #define OFS_CMD         3      // 1 byte (Type)
 #define OFS_RCODE       4      // 1 byte
-#define OFS_SUBLEN      5      // 2 byte
 #define OFS_SUBDATA     7      // 가변
 
 // CMD Define
@@ -43,6 +51,13 @@
 #define CMD_DOWNLOAD_CONFIRM   0x09
 #define CMD_ERR_RESPONSE       0xFF
 
+// Table 관련
+#define GUI_TABLE_SUBDATA_SIZE              765
+#define GUI_TABLE_SUBDATA_INDEX             0U 
+#define GUI_TABLE_SUBDATA_START             1U
+#define GUI_TABLE_SUBDATA_LENGTH            2U
+#define GUI_TABLE_SUBDATA_DATA              3U
+#define GUI_TABLE_SUBDATA_DATA_OFFSET       3U
 
 // Download 관련 
 #define GUI_DOWNLOAD_ACK 0x00U 
@@ -124,6 +139,7 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState);
 void Gui_SendTableStatusMessage(u8 *pRxMsg);
 void Gui_SendTableSaveMessage(u8 *pRxMsg);
 void Gui_SendAlarmLogMessage(u8 *pRxMsg);
+void Gui_ClearAlarmLogMessage(u8 *pRxMsg);
 void Gui_SendDownLoadReqMessage(u8 *pRxMsg);
 void Gui_SendDownLoadDataMessage(u8 *pRxMsg);
 void Gui_SendDownLoadConfirmMessage(u8 *pRxMsg);

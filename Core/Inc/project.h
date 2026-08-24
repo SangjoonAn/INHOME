@@ -18,7 +18,7 @@ typedef struct
     u8 McuSwVer;
     u8 SysTemper;
     u8 Reserve003[2];
-
+   
     union
     {
         u8 Data;
@@ -47,7 +47,7 @@ typedef struct
             u8 Reserved      :4;
         } Bit;
 
-    } Control1;
+    } Flag1;
 
     union
     {
@@ -63,7 +63,9 @@ typedef struct
             u8 Reserved       :2;
         } Bit;
 
-    } Control2;
+    } Flag2;
+
+
     u8 Reserve009;
 
     // 010~019
@@ -174,12 +176,12 @@ typedef struct
     s8  RxAttGainTotal;                 // 133
     s8  RxAttBalanceTotal;              // 134
     s8  RxAttIsoTotal;                  // 135
-    u8  UlRfSwOnOff;                   // 136
-    s8  IsolationSetting;              // 137
-    s8  OscSetting;                    // 138
+    u8  UlRfSw;                   // 136
+    s8  IsoSet;              // 137
+    s8  OscSet;                    // 138
 
-    s16 TxSdTTime; // 139 ~ 140
-    s16 RxSdTTime; // 141 ~ 142
+    s16 TxSdTime; // 139 ~ 140
+    s16 RxSdTime; // 141 ~ 142
     s16 UlFbDet; // 143 ~ 144
     s8 SleepReleaseOffset; // 145
     u8 TxAlcAtt; // 146
@@ -194,124 +196,188 @@ typedef struct
 typedef struct
 {
     // 000 ~ 008
-    struct
+
+    union
     {
-        union
+        u8 Data;
+        struct
         {
-            u8 Data;
-            struct
-            {
-                u8 TxAlc           :1;
-                u8 RxAlc           :1;
-                u8 TxShutdown      :1;
-                u8 RxShutdown      :1;
-                u8 SleepMode       :1;
-                u8 IsoCheck        :1;
-                u8 IsoReCheck      :1;
-                u8 Reserved        :1;
-            } Bit;
-        } Flag1;
-        u8 TxAlc;
-        u8 RxAlc;
-        u8 TxShutdown;
-        u8 RxShutdown;
-        u8 SleepMode;
-        u8 IsoCheck;
-        u8 IsoReCheck;
-        u8 Reserved08;
+            u8 TxAlc           :1;
+            u8 RxAlc           :1;
+            u8 TxShutdown      :1;
+            u8 RxShutdown      :1;
+            u8 SleepMode       :1;
+            u8 IsoCheck        :1;
+            u8 IsoReCheck      :1;
+            u8 Reserved        :1;
+        } Bit;
+    } Flag1;
+    u8 TxAlc;
+    u8 RxAlc;
+    u8 TxShutdown;
+    u8 RxShutdown;
+    u8 SleepMode;
+    u8 IsoCheck;
+    u8 IsoReCheck;
+    u8 Reserved08;
 
-        // 009 ~ 017
-        union
+    // 009 ~ 017
+    union
+    {
+        u8 Data;
+        struct
         {
-            u8 Data;
-            struct
-            {
-                u8 TxPath          :1;
-                u8 RxPath          :1;
-                u8 SystemReset     :1;
-                u8 IsoLimitRun     :1;
-                u8 Reserved        :4;
+            u8 TxPath          :1;
+            u8 RxPath          :1;
+            u8 SystemReset     :1;
+            u8 IsoLimitRun     :1;
+            u8 Reserved        :4;
 
-            } Bit;
+        } Bit;
 
-        } Flag2;
+    } Flag2;
 
-        u8 TxPath;
-        u8 RxPath;
-        u8 SystemReset;
-        u8 IsoLimitRun;
-        u8 Reserved17[4];
-    } Control;
+    u8 TxPath;
+    u8 RxPath;
+    u8 SystemReset;
+    u8 IsoLimitRun;
+    u8 Reserved17[4];
 
     // 018 ~ 026
-    struct
+    union
     {
-        union
+        u8 Data;
+        struct
         {
-            u8 Data;
-            struct
-            {
-                u8 TxAtt           :1;
-                u8 RxAtt           :1;
-                u8 TxLinkBalance   :1;
-                u8 RxLinkBalance   :1;
-                u8 IsoAtt          :1;
-                u8 Reserved        :3;
+            u8 TxGainAtt           :1;
+            u8 RxGainAtt           :1;
+            u8 TxLinkBalanceAtt   :1;
+            u8 RxLinkBalanceAtt   :1;
+            u8 IsoAtt          :1;
+            u8 Reserved        :3;
 
-            } Bit;
+        } Bit;
 
-        } Flag;
+    } Flag3;
 
 
-        u8 TxAtt;
-        u8 RxAtt;
+    u8 TxGainAtt;
+    u8 RxGainAtt;
 
-        u8 TxLinkBalanceAtt;
-        u8 RxLinkBalanceAtt;
+    u8 TxLinkBalanceAtt;
+    u8 RxLinkBalanceAtt;
 
-        u8 IsoAtt;
+    u8 IsoAtt;
 
-        u8 Reserved26[3];
-    } System;
+    u8 Reserved26[3];
+
 
 
     // 027 ~ 035
-    struct
+    union
     {
-        union
+        u8 Data;
+        struct
         {
-            u8 Data;
-            struct
-            {
-                u8 TxShutdownLimit :1;
-                u8 RxShutdownLimit :1;
-                u8 TxAlcHighLevel  :1;
-                u8 RxAlcHighLevel  :1;
-                u8 TxAlcLowOffset  :1;
-                u8 RxAlcLowOffset  :1;
-                u8 SleepModeLimit  :1;
-                u8 Reserved        :1;
-            } Bit;
-        } Flag;
-        s8 TxShutdownLimit;
-        s8 RxShutdownLimit;
+            u8 TxShutdownLimit :1;
+            u8 RxShutdownLimit :1;
+            u8 TxAlcHighLevel  :1;
+            u8 RxAlcHighLevel  :1;
+            u8 TxAlcLowOffset  :1;
+            u8 RxAlcLowOffset  :1;
+            u8 SleepModeLimit  :1;
+            u8 Reserved        :1;
+        } Bit;
+    } Flag4;
+    s8 TxShutdownLimit;
+    s8 RxShutdownLimit;
 
-        s8 TxAlcHighLevel;
-        s8 RxAlcHighLevel;
+    s8 TxAlcHighLevel;
+    s8 RxAlcHighLevel;
 
-        s8 TxAlcLowOffset;
-        s8 RxAlcLowOffset;
+    s8 TxAlcLowOffset;
+    s8 RxAlcLowOffset;
 
-        s8 SleepModeLimit;
+    s8 SleepModeLimit;
 
-        u8 Reserved35;
+    u8 Reserved35;
 
-    } Level;
     // 036 ~ 053
     u8 InitCheckNum;
     u16 PreAlarmSts;
-    u8 Reserved[15];
-    u8 Reserved54[75];
+    u8 Reserved39[60];
+
+    union 
+    { 
+        u8 Data; 
+        struct 
+        { 
+            u8 TxPowerOffsetInput :1; /* 0 : 변경 */ 
+            u8 TxPowerOffsetOutput :1; /* 1 : 변경 */ 
+            u8 RxPowerOffsetInput :1; /* 2 : 변경 */ 
+            u8 RxPowerOffsetOutput :1; /* 3 : 변경 */ 
+            u8 TemperatureComp :1; /* 4 : 변경 */ 
+            u8 TemperatureOffset :1; /* 5 : 변경 */ 
+            u8 TxAttGainOffset :1; /* 6 : 변경 */ 
+            u8 Reserved :1; /* 7 */ 
+        } Bit; 
+    } Flag5;
+
+    union 
+    { 
+        u8 Data; 
+        struct 
+        { 
+            u8 Reserved0 :1; /* 0 : 변경 */ 
+            u8 Reserved1 :1; /* 1 : 변경 */ 
+            u8 RxAttIsoOffset :1; /* 2 : 변경 */ 
+            u8 UlRfSw :1; /* 3 : 변경 */ 
+            u8 IsoSet :1; /* 4 : 변경 */ 
+            u8 OscSet :1; /* 5 : 변경 */ 
+            u8 TxSdTime :1; /* 6 : 변경 */ 
+            u8 RxSdTime :1; /* 7 */ 
+        } Bit; 
+    } Flag6;
+
+    s8 TxPowerOffsetInput; /* 101 */ 
+    s8 TxPowerOffsetOutput; /* 102 */ 
+    s8 RxPowerOffsetInput; /* 103 */ 
+    s8 RxPowerOffsetOutput; /* 104 */ 
+    u8 TemperatureComp; /* 105 */ 
+    s8 TemperatureOffset; /* 106 */ 
+    u8 TxAttGainOffset; 
+
+    u8 Reserved108[3];
+    u8 RxAttIsoOffset;
+    u8 UlRfSw;
+    s8 IsoSet;
+    s8 OscSet;
+    u16 TxSdTime;
+    u16 RxSdTime;
+
+    union 
+    { 
+        u8 Data; 
+        struct 
+        { 
+            u8 SleepReleaseOffset :1; /* 0 : 변경 */ 
+            u8 TxAlcAtt :1; /* 1 : 변경 */ 
+            u8 RxAlcAtt :1; /* 2 : 변경 */ 
+            u8 OscOnOff :1; /* 3 : 변경 */ 
+            u8 Reserved4 :1; /* 4 : 변경 */ 
+            u8 UlFbOffset :1; /* 5 : 변경 */ 
+            u8 Reserved6 :1; /* 6 : 변경 */ 
+            u8 Reserved7 :1; /* 7 */ 
+        } Bit; 
+    } Flag7;
+    s8 SleepReleaseOffset;
+    u8 TxAlcAtt;
+    u8 RxAlcAtt;
+    u8 OscOnOff;
+    u8 Reserved124[2];
+    s16 UlFbOffset;
+    u8 Reserved128[2];
+
 } MY_CONTROL_t;
 #pragma pack(pop)
 

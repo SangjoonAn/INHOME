@@ -92,7 +92,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  __enable_irq();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -129,6 +129,7 @@ int main(void)
   Eep_Init();
   Alarm_Init();
   Init_DataRestore();
+  Init_ResetCheck();
   
   /* USER CODE END 2 */
 

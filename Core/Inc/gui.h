@@ -11,7 +11,7 @@
 
 #define SYNC_LEN        4
 #define HEADER_LEN      4      // SourceID(1) + Length(2) + DestID(1)
-#define CRC_LEN                       2
+#define CRC_LEN         2
 
 #define BODY_MIN_LEN    9      // Reserved(3)+Type(1)+RCODE(1)+LEN(2)+CRC(2)
 #define END_FLAG        0xF5

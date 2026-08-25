@@ -8,6 +8,6 @@
 #define CRC_16_SEED			  0X0000
 
 u16 Generate_CRC (u8 *buf_ptr, u16 len);
-
+u16 Generate_CRC_Update(u16 Crc, u8 *pData, u16 Length);
 
 #endif /* CRC_H */

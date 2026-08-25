@@ -61,3 +61,16 @@ u16 Generate_CRC (u8 *buf_ptr, u16 len)
 	}
 	return (crc_16);
 }
+
+u16 Generate_CRC_Update(u16 Crc, u8 *pData, u16 Length)
+{
+    u16 i;
+
+    for (i = 0U; i < Length; i++)
+    {
+        Crc = Crc16_Table[(Crc >> 8) ^ pData[i]]
+             ^ (Crc << 8);
+    }
+
+    return Crc;
+}

@@ -28,11 +28,27 @@
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
 
-#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_2   /* Start @ of user Flash area */
-#define FLASH_USER_END_ADDR     ADDR_FLASH_SECTOR_11  +  GetSectorSize(ADDR_FLASH_SECTOR_11) -1 /* End @ of user Flash area : sector start address + sector size - 1 */
+#define FLASH_APP_START_ADDR        ADDR_FLASH_SECTOR_1   /* Start @ of user Flash area */
+#define FLASH_APP_END_ADDR          ADDR_FLASH_SECTOR_6   /* Start @ of user Flash area */
+
+#define FLASH_DOWNLOAD_START_ADDR   ADDR_FLASH_SECTOR_9   /* Start @ of user Flash area */
+#define FLASH_DOWNLOAD_END_ADDR     ADDR_FLASH_SECTOR_11  +  GetSectorSize(ADDR_FLASH_SECTOR_11) -1 /* End @ of user Flash area : sector start address + sector size - 1 */
+
+
+//EEPROM ADDRESS
+#define FW_ID_ADDR											0x2F00				//4byte
+#define FW_SIZE_ADDR				  						0x2F04				//4byte
+#define FW_PATH_ADDR				  						0x2F08				//1byte
+#define FW_FLASH_UES_ADDR		  							0x2F10				//4byte
+
+#define FW_VALID_ID                     0x7F557F55U
+#define FW_UPGRADE_ID                   0x00050401U
+#define FW_INVALID_ID                   0x00000000U
+
 
 uint32_t GetSector(uint32_t Address);
 uint32_t GetSectorSize(uint32_t Sector);
 u8 Down_DownloadStart(void);
-
+u8 Down_DownloadData(u16 FrameNum, u16 FrameLength, u8 *pData);
+u8 Down_CheckData(u16 RcvCrc);
 #endif /* INC_DOWN_H_ */

@@ -14,7 +14,7 @@
  */
 #include "main.h"
 #include "bsp_eep.h"
-#include "project.h"
+//#include "project.h"
 #include "bsp_uart.h"
 
 /* ============================================================
@@ -73,9 +73,7 @@ static void EEPROM_I2C_GPIO_ToGPIO(void)
      */
     __HAL_RCC_GPIOB_CLK_ENABLE();
  
-    GPIO_InitStruct.Pin =
-            EEPROM_I2C_SCL_PIN |
-            EEPROM_I2C_SDA_PIN;
+    GPIO_InitStruct.Pin = EEPROM_I2C_SCL_PIN | EEPROM_I2C_SDA_PIN;
  
     /*
      * Open Drain is required for I2C.
@@ -90,18 +88,12 @@ static void EEPROM_I2C_GPIO_ToGPIO(void)
  
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
  
-    HAL_GPIO_Init(
-        EEPROM_I2C_GPIO_PORT,
-        &GPIO_InitStruct);
+    HAL_GPIO_Init( EEPROM_I2C_GPIO_PORT, &GPIO_InitStruct);
  
     /*
      * Release both lines (open-drain HIGH = released).
      */
-    HAL_GPIO_WritePin(
-        EEPROM_I2C_GPIO_PORT,
-        EEPROM_I2C_SCL_PIN |
-        EEPROM_I2C_SDA_PIN,
-        GPIO_PIN_SET);
+    HAL_GPIO_WritePin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SCL_PIN | EEPROM_I2C_SDA_PIN, GPIO_PIN_SET);
 }
  
  
@@ -115,18 +107,14 @@ static void EEPROM_I2C_GPIO_ToAF(void)
  
     __HAL_RCC_GPIOB_CLK_ENABLE();
  
-    GPIO_InitStruct.Pin =
-            EEPROM_I2C_SCL_PIN |
-            EEPROM_I2C_SDA_PIN;
+    GPIO_InitStruct.Pin = EEPROM_I2C_SCL_PIN | EEPROM_I2C_SDA_PIN;
  
     GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull      = GPIO_NOPULL;
     GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = EEPROM_I2C_GPIO_AF;
  
-    HAL_GPIO_Init(
-        EEPROM_I2C_GPIO_PORT,
-        &GPIO_InitStruct);
+    HAL_GPIO_Init( EEPROM_I2C_GPIO_PORT, &GPIO_InitStruct);
 }
  
  
@@ -141,16 +129,11 @@ static uint8_t EEPROM_IsBusReleased(void)
     GPIO_PinState scl;
     GPIO_PinState sda;
  
-    scl = HAL_GPIO_ReadPin(
-            EEPROM_I2C_GPIO_PORT,
-            EEPROM_I2C_SCL_PIN);
+    scl = HAL_GPIO_ReadPin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SCL_PIN);
  
-    sda = HAL_GPIO_ReadPin(
-            EEPROM_I2C_GPIO_PORT,
-            EEPROM_I2C_SDA_PIN);
+    sda = HAL_GPIO_ReadPin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SDA_PIN);
  
-    if ((scl == GPIO_PIN_SET) &&
-        (sda == GPIO_PIN_SET))
+    if ((scl == GPIO_PIN_SET) && (sda == GPIO_PIN_SET))
     {
         return 1U;
     }
@@ -214,28 +197,19 @@ EEPROM_Status_t I2C_BusReset(void)
         for (i = 0U; i < EEPROM_RECOVERY_CLOCKS; i++)
         {
             /* SCL LOW */
-            HAL_GPIO_WritePin(
-                EEPROM_I2C_GPIO_PORT,
-                EEPROM_I2C_SCL_PIN,
-                GPIO_PIN_RESET);
+            HAL_GPIO_WritePin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SCL_PIN, GPIO_PIN_RESET);
  
             HAL_Delay(EEPROM_RECOVERY_DELAY);
  
             /* SCL HIGH */
-            HAL_GPIO_WritePin(
-                EEPROM_I2C_GPIO_PORT,
-                EEPROM_I2C_SCL_PIN,
-                GPIO_PIN_SET);
+            HAL_GPIO_WritePin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SCL_PIN, GPIO_PIN_SET);
  
             HAL_Delay(EEPROM_RECOVERY_DELAY);
  
             /*
              * If slave released SDA, stop clocking.
              */
-            if (HAL_GPIO_ReadPin(
-                    EEPROM_I2C_GPIO_PORT,
-                    EEPROM_I2C_SDA_PIN)
-                == GPIO_PIN_SET)
+            if (HAL_GPIO_ReadPin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SDA_PIN) == GPIO_PIN_SET)
             {
                 break;
             }
@@ -243,18 +217,14 @@ EEPROM_Status_t I2C_BusReset(void)
  
         if (i >= EEPROM_RECOVERY_CLOCKS)
         {
-            DebugPrint("\r\n[I2C] SDA still stuck LOW after %d clocks",
-                       EEPROM_RECOVERY_CLOCKS);
+            DebugPrint("\r\n[I2C] SDA still stuck LOW after %d clocks", EEPROM_RECOVERY_CLOCKS);
         }
     }
  
     /*
      * Make sure SCL is HIGH before generating STOP.
      */
-    HAL_GPIO_WritePin(
-        EEPROM_I2C_GPIO_PORT,
-        EEPROM_I2C_SCL_PIN,
-        GPIO_PIN_SET);
+    HAL_GPIO_WritePin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SCL_PIN, GPIO_PIN_SET);
  
     HAL_Delay(1);
  
@@ -264,17 +234,11 @@ EEPROM_Status_t I2C_BusReset(void)
      * SCL = HIGH
      * SDA LOW -> HIGH
      */
-    HAL_GPIO_WritePin(
-        EEPROM_I2C_GPIO_PORT,
-        EEPROM_I2C_SDA_PIN,
-        GPIO_PIN_RESET);
+    HAL_GPIO_WritePin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SDA_PIN, GPIO_PIN_RESET);
  
     HAL_Delay(1);
  
-    HAL_GPIO_WritePin(
-        EEPROM_I2C_GPIO_PORT,
-        EEPROM_I2C_SDA_PIN,
-        GPIO_PIN_SET);
+    HAL_GPIO_WritePin( EEPROM_I2C_GPIO_PORT, EEPROM_I2C_SDA_PIN, GPIO_PIN_SET);
  
     HAL_Delay(1);
  
@@ -329,11 +293,7 @@ EEPROM_Status_t I2C_EE_IsReady(void)
 {
     HAL_StatusTypeDef status;
  
-    status = HAL_I2C_IsDeviceReady(
-                &EEPROM_I2C_HANDLE,
-                EEPROM_ADDRESS,
-                EEPROM_IS_READY_TRIALS,
-                EEPROM_I2C_TIMEOUT);
+    status = HAL_I2C_IsDeviceReady( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, EEPROM_IS_READY_TRIALS, EEPROM_I2C_TIMEOUT);
  
     if (status == HAL_OK)
     {
@@ -374,7 +334,7 @@ EEPROM_Status_t Eep_Init(void)
 {
     EEPROM_Status_t status;
  
-    DebugPrint("\r\n[EEPROM] Init");
+    DebugPrint("\r\n%d][EEPROM] Init",HAL_GetTick());
  
     /*
      * First check whether EEPROM responds normally.
@@ -383,13 +343,11 @@ EEPROM_Status_t Eep_Init(void)
  
     if (status == EEPROM_OK)
     {
-        DebugPrint("\r\n[EEPROM] Device Ready (Addr=0x%02X, Page=%d)",
-                   EEPROM_ADDRESS, I2C_PageSize);
- 
+        DebugPrint("\r\n%d][EEPROM] Device Ready (Addr=0x%02X, Page=%d)",HAL_GetTick() , EEPROM_ADDRESS, I2C_PageSize);
         return EEPROM_OK;
     }
  
-    DebugPrint("\r\n[EEPROM] Device not ready, trying Bus Recovery");
+    DebugPrint("\r\n%d][EEPROM] Device not ready, trying Bus Recovery",HAL_GetTick() );
  
     /*
      * EEPROM did not respond. Try I2C bus recovery.
@@ -398,7 +356,7 @@ EEPROM_Status_t Eep_Init(void)
  
     if (status != EEPROM_OK)
     {
-        DebugPrint("\r\n[EEPROM] Bus Recovery failed");
+        DebugPrint("\r\n%d][EEPROM] Bus Recovery failed",HAL_GetTick() );
  
         return status;
     }
@@ -410,11 +368,11 @@ EEPROM_Status_t Eep_Init(void)
  
     if (status == EEPROM_OK)
     {
-        DebugPrint("\r\n[EEPROM] Init OK after Recovery");
+        DebugPrint("\r\n%d][EEPROM] Init OK after Recovery",HAL_GetTick() );
     }
     else
     {
-        DebugPrint("\r\n[EEPROM] Device not responding after Recovery");
+        DebugPrint("\r\n%d][EEPROM] Device not responding after Recovery",HAL_GetTick() );
     }
  
     return status;
@@ -438,11 +396,7 @@ EEPROM_Status_t I2C_EE_WaitEepromStandbyState(void)
  
     while (1)
     {
-        status = HAL_I2C_IsDeviceReady(
-                    &EEPROM_I2C_HANDLE,
-                    EEPROM_ADDRESS,
-                    1U,
-                    EEPROM_I2C_TIMEOUT);
+        status = HAL_I2C_IsDeviceReady( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, 1U, EEPROM_I2C_TIMEOUT);
  
         if (status == HAL_OK)
         {
@@ -457,7 +411,7 @@ EEPROM_Status_t I2C_EE_WaitEepromStandbyState(void)
          */
         if ((HAL_GetTick() - tickstart) >= EEPROM_WRITE_TIMEOUT)
         {
-            DebugPrint("\r\n[EEPROM] Standby wait timeout");
+            DebugPrint("\r\n%d][EEPROM] Standby wait timeout",HAL_GetTick() );
  
             return EEPROM_TIMEOUT;
         }
@@ -478,10 +432,7 @@ EEPROM_Status_t I2C_EE_WaitEepromStandbyState(void)
  * NumByteToWrite <= I2C_PageSize.
  * ============================================================ */
  
-EEPROM_Status_t I2C_EE_PageWrite(
-        uint8_t *pBuffer,
-        uint16_t WriteAddr,
-        uint16_t NumByteToWrite)
+EEPROM_Status_t I2C_EE_PageWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16_t NumByteToWrite)
 {
     HAL_StatusTypeDef status;
     uint32_t error;
@@ -501,8 +452,7 @@ EEPROM_Status_t I2C_EE_PageWrite(
  
     if (NumByteToWrite > I2C_PageSize)
     {
-        DebugPrint("\r\n[EEPROM] PageWrite size error (%d > %d)",
-                   NumByteToWrite, I2C_PageSize);
+        DebugPrint("\r\n%d][EEPROM] PageWrite size error (%d > %d)",HAL_GetTick() , NumByteToWrite, I2C_PageSize);
  
         return EEPROM_ERROR;
     }
@@ -512,8 +462,7 @@ EEPROM_Status_t I2C_EE_PageWrite(
      */
     if ((WriteAddr % I2C_PageSize) + NumByteToWrite > I2C_PageSize)
     {
-        DebugPrint("\r\n[EEPROM] PageWrite boundary error @0x%04X, size=%d",
-                   WriteAddr, NumByteToWrite);
+        DebugPrint("\r\n%d][EEPROM] PageWrite boundary error @0x%04X, size=%d",HAL_GetTick() , WriteAddr, NumByteToWrite);
  
         return EEPROM_ERROR;
     }
@@ -521,14 +470,7 @@ EEPROM_Status_t I2C_EE_PageWrite(
     /*
      * Perform one page write.
      */
-    status = HAL_I2C_Mem_Write(
-                &EEPROM_I2C_HANDLE,
-                EEPROM_ADDRESS,
-                WriteAddr,
-                EEPROM_MEMADD_SIZE,
-                pBuffer,
-                NumByteToWrite,
-                EEPROM_I2C_TIMEOUT);
+    status = HAL_I2C_Mem_Write( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, WriteAddr, EEPROM_MEMADD_SIZE, pBuffer, NumByteToWrite, EEPROM_I2C_TIMEOUT);
  
     if (status == HAL_OK)
     {
@@ -543,8 +485,7 @@ EEPROM_Status_t I2C_EE_PageWrite(
      */
     error = HAL_I2C_GetError(&EEPROM_I2C_HANDLE);
  
-    DebugPrint("\r\n[I2C] PageWrite ERR @0x%04X, HAL=%d, ERR=0x%08lX",
-               WriteAddr, status, (unsigned long)error);
+    DebugPrint("\r\n%d][I2C] PageWrite ERR @0x%04X, HAL=%d, ERR=0x%08lX",HAL_GetTick() , WriteAddr, status, (unsigned long)error);
  
     /*
      * Recover only when the error looks like a physical /
@@ -552,23 +493,14 @@ EEPROM_Status_t I2C_EE_PageWrite(
      * be a normal, transient condition, so it is not treated
      * as a bus-stuck situation here.
      */
-    if ((status == HAL_BUSY) ||
-        (status == HAL_TIMEOUT) ||
-        (error & HAL_I2C_ERROR_BERR))
+    if ((status == HAL_BUSY) || (status == HAL_TIMEOUT) || (error & HAL_I2C_ERROR_BERR))
     {
         if (I2C_BusReset() == EEPROM_OK)
         {
             /*
              * Retry the page write once after recovery.
              */
-            status = HAL_I2C_Mem_Write(
-                        &EEPROM_I2C_HANDLE,
-                        EEPROM_ADDRESS,
-                        WriteAddr,
-                        EEPROM_MEMADD_SIZE,
-                        pBuffer,
-                        NumByteToWrite,
-                        EEPROM_I2C_TIMEOUT);
+            status = HAL_I2C_Mem_Write( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, WriteAddr, EEPROM_MEMADD_SIZE, pBuffer, NumByteToWrite, EEPROM_I2C_TIMEOUT);
  
             if (status == HAL_OK)
             {
@@ -577,8 +509,7 @@ EEPROM_Status_t I2C_EE_PageWrite(
  
             error = HAL_I2C_GetError(&EEPROM_I2C_HANDLE);
  
-            DebugPrint("\r\n[I2C] PageWrite retry failed @0x%04X, HAL=%d, ERR=0x%08lX",
-                       WriteAddr, status, (unsigned long)error);
+            DebugPrint("\r\n%d][I2C] PageWrite retry failed @0x%04X, HAL=%d, ERR=0x%08lX",HAL_GetTick() , WriteAddr, status, (unsigned long)error);
         }
     }
  
@@ -641,15 +572,11 @@ EEPROM_Status_t I2C_EE_BufferWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16
             bytesToWrite = bytesToPageEnd;
         }
  
-        status = I2C_EE_PageWrite(
-                    pBuffer,
-                    WriteAddr,
-                    bytesToWrite);
+        status = I2C_EE_PageWrite( pBuffer, WriteAddr, bytesToWrite);
  
         if (status != EEPROM_OK)
         {
-            DebugPrint("\r\n[ERR][EEPROM] BufferWrite failed @0x%04X",
-                       WriteAddr);
+            DebugPrint("\r\n%d][ERR][EEPROM] BufferWrite failed @0x%04X",HAL_GetTick() , WriteAddr);
  
             return status;
         }
@@ -667,14 +594,9 @@ EEPROM_Status_t I2C_EE_BufferWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16
  * Byte Write
  * ============================================================ */
  
-EEPROM_Status_t I2C_EE_ByteWrite(
-        uint8_t *pBuffer,
-        uint16_t WriteAddr)
+EEPROM_Status_t I2C_EE_ByteWrite( uint8_t *pBuffer, uint16_t WriteAddr)
 {
-    return I2C_EE_PageWrite(
-                pBuffer,
-                WriteAddr,
-                1U);
+    return I2C_EE_PageWrite( pBuffer, WriteAddr, 1U);
 }
  
  
@@ -693,10 +615,7 @@ EEPROM_Status_t I2C_EE_ByteWrite(
  *   STOP
  * ============================================================ */
  
-EEPROM_Status_t I2C_EE_BufferRead(
-        uint8_t *pBuffer,
-        uint16_t ReadAddr,
-        uint16_t NumByteToRead)
+EEPROM_Status_t I2C_EE_BufferRead( uint8_t *pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
 {
     HAL_StatusTypeDef status;
     uint32_t error;
@@ -711,14 +630,7 @@ EEPROM_Status_t I2C_EE_BufferRead(
         return EEPROM_OK;
     }
  
-    status = HAL_I2C_Mem_Read(
-                &EEPROM_I2C_HANDLE,
-                EEPROM_ADDRESS,
-                ReadAddr,
-                EEPROM_MEMADD_SIZE,
-                pBuffer,
-                NumByteToRead,
-                EEPROM_I2C_TIMEOUT);
+    status = HAL_I2C_Mem_Read( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, ReadAddr, EEPROM_MEMADD_SIZE, pBuffer, NumByteToRead, EEPROM_I2C_TIMEOUT);
  
     if (status == HAL_OK)
     {
@@ -730,30 +642,20 @@ EEPROM_Status_t I2C_EE_BufferRead(
      */
     error = HAL_I2C_GetError(&EEPROM_I2C_HANDLE);
  
-    DebugPrint("\r\n[I2C] BufferRead ERR @0x%04X, HAL=%d, ERR=0x%08lX",
-               ReadAddr, status, (unsigned long)error);
+    DebugPrint("\r\n%d][I2C] BufferRead ERR @0x%04X, HAL=%d, ERR=0x%08lX",HAL_GetTick() , ReadAddr, status, (unsigned long)error);
  
     /*
      * Recover physical bus errors only (see PageWrite comment
      * above for rationale).
      */
-    if ((status == HAL_BUSY) ||
-        (status == HAL_TIMEOUT) ||
-        (error & HAL_I2C_ERROR_BERR))
+    if ((status == HAL_BUSY) || (status == HAL_TIMEOUT) || (error & HAL_I2C_ERROR_BERR))
     {
         if (I2C_BusReset() == EEPROM_OK)
         {
             /*
              * Retry once after recovery.
              */
-            status = HAL_I2C_Mem_Read(
-                        &EEPROM_I2C_HANDLE,
-                        EEPROM_ADDRESS,
-                        ReadAddr,
-                        EEPROM_MEMADD_SIZE,
-                        pBuffer,
-                        NumByteToRead,
-                        EEPROM_I2C_TIMEOUT);
+            status = HAL_I2C_Mem_Read( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, ReadAddr, EEPROM_MEMADD_SIZE, pBuffer, NumByteToRead, EEPROM_I2C_TIMEOUT);
  
             if (status == HAL_OK)
             {
@@ -762,8 +664,7 @@ EEPROM_Status_t I2C_EE_BufferRead(
  
             error = HAL_I2C_GetError(&EEPROM_I2C_HANDLE);
  
-            DebugPrint("\r\n[I2C] BufferRead retry failed @0x%04X, HAL=%d, ERR=0x%08lX",
-                       ReadAddr, status, (unsigned long)error);
+            DebugPrint("\r\n%d][I2C] BufferRead retry failed @0x%04X, HAL=%d, ERR=0x%08lX",HAL_GetTick() , ReadAddr, status, (unsigned long)error);
         }
     }
  

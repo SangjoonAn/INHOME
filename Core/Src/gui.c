@@ -14,6 +14,7 @@ static u8 Gui_TxMsgBuffer[UART1_FRAME_BUF_SIZE];
 
 
 
+
 MY_STATE_t      iMySts;
 MY_CONTROL_t    iMyCtrl;
 
@@ -160,9 +161,15 @@ void GUI_ParserMessage(u8 *pRxMsg, u16 RxLen)
 {
 	GUI_BODY_t  *pLine;
 	pLine = (GUI_BODY_t *)pRxMsg;
+    u16 Temp;
 
-    pLine->SubLen |= (pRxMsg[OFS_MSB_SUB_DATA_LENGTH] << 8);
-    pLine->SubLen |= pRxMsg[OFS_LSB_SUB_DATA_LENGTH];
+    Temp = GetU16BE((u8 *)&pLine->SubLen);
+    pLine->SubLen = Temp;
+
+    Temp = GetU16BE((u8 *)&pLine->BodyLen);
+    pLine->BodyLen = Temp;
+
+    //DebugPrint("\r\n %d][GUI] GUI_ParserMessage BodyLen : %d, RxLen : %d, pLine->SubLen %d", HAL_GetTick(), pLine->BodyLen, RxLen, pLine->SubLen);
 
 	if(pLine->Cmd==CMD_MAIN_STATUS){
 		DebugPrint("\r\n %d][GUI] CMD_MAIN_STATUS", HAL_GetTick());
@@ -688,19 +695,27 @@ void Gui_ClearAlarmLogMessage(u8 *pRxMsg)
 
 }
 
+
+u16 TestCrc = 0;
 void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
 {
 	GUI_BODY_t  *pLine;
 	pLine = (GUI_BODY_t *)pRxMsg;
     u8 SubData[4];
     u16 SubDataLen;
+    u16 FrameNum;
 
     SubDataLen = 4;
+
+    TestCrc = 0;
 
     SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
     SubData[GUI_DOWNLOAD_REQ_CNT_MSB_OFFSET] = pLine->SubData[1];
     SubData[GUI_DOWNLOAD_REQ_CNT_LSB_OFFSET] = pLine->SubData[2];
 
+    FrameNum = pLine->SubData[1] << 8 | pLine->SubData[2];
+
+    
     if(Down_DownloadStart() == FALSE){
         DebugPrint("\r\n %d][GUI][ERR] Gui_SendDownLoadReqMessage Down_DownloadStart ERR", HAL_GetTick());
         // GUI Send 추가
@@ -708,9 +723,14 @@ void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
     }
 
 
+    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadReqMessage - FrameNum = %d", HAL_GetTick(), FrameNum);
+
+
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_REQ, SubData, SubDataLen);
 
 }
+
+
 
 void Gui_SendDownLoadDataMessage(u8 *pRxMsg)
 {
@@ -722,15 +742,35 @@ void Gui_SendDownLoadDataMessage(u8 *pRxMsg)
     u16 FrameLength = 0;
 
     SubDataLen = 3;
+    
 
     FrameNum = pLine->SubData[0] << 8 | pLine->SubData[1];
-    FrameLength = GetU16BE((u8*)pLine->SubLen);
+    FrameLength = pLine->SubLen - CRC_LEN;
+
+    
+    if(Down_DownloadData(FrameNum, FrameLength, &pLine->SubData[2]) == FALSE){
+        DebugPrint("\r\n %d][GUI][ERR] Gui_SendDownLoadDataMessage - Down_DownloadData Error ", HAL_GetTick());
+        SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_NACK;
+        SubData[GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET] = pLine->SubData[0];
+        SubData[GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET] = pLine->SubData[1];
+        Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_DATA, SubData, SubDataLen);
+        return;
+    }
+    
+    /*
+    // Test
+    u8  ReadBuffer[512];
+    memcpy(ReadBuffer, (u8 *)&pLine->SubData[2], FrameLength);
+    TestCrc = Generate_CRC_Update(TestCrc, ReadBuffer, FrameLength);
+    DebugPrint("\r\n %d][GUI] Generate_CRC_Update TestCrc = %d", HAL_GetTick(), TestCrc);
+    */
+
 
     SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
     SubData[GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET] = pLine->SubData[0];
     SubData[GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET] = pLine->SubData[1];
 
-    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadDataMessage - FrameNum = %d ", HAL_GetTick(), FrameNum);
+    //DebugPrint("\r\n %d][GUI] Gui_SendDownLoadDataMessage - BodyLen = %d, FrameNum = %d , FrameLength = %d", HAL_GetTick(), pLine->BodyLen ,FrameNum, FrameLength);
 
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_DATA, SubData, SubDataLen);
@@ -752,6 +792,18 @@ void Gui_SendDownLoadConfirmMessage(u8 *pRxMsg)
     Cnt = pLine->SubData[0] << 8 | pLine->SubData[1];
     Crc = pLine->SubData[2] << 8 | pLine->SubData[3];
 
+    if(Down_CheckData(Crc) == FALSE){
+        DebugPrint("\r\n %d][GUI][ERR] Gui_SendDownLoadConfirmMessage - Down_CheckData Error ", HAL_GetTick());
+        SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_NACK;
+        SubData[GUI_DOWNLOAD_DATA_CNT_MSB_OFFSET] = pLine->SubData[0];
+        SubData[GUI_DOWNLOAD_DATA_CNT_LSB_OFFSET] = pLine->SubData[1];
+        SubData[3] = pLine->SubData[2];
+        SubData[4] = pLine->SubData[3];
+        Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_CONFIRM, SubData, SubDataLen);
+        return;
+    }
+
+
 
     // Test
     SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
@@ -760,7 +812,7 @@ void Gui_SendDownLoadConfirmMessage(u8 *pRxMsg)
     SubData[3] = pLine->SubData[2];
     SubData[4] = pLine->SubData[3];
 
-    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadConfirmMessage - CNT = %d ", HAL_GetTick(), Cnt);
+    DebugPrint("\r\n %d][GUI] Gui_SendDownLoadConfirmMessage - CNT = %d , Crc = %d ", HAL_GetTick(), Cnt , Crc);
 
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_CONFIRM, SubData, SubDataLen);

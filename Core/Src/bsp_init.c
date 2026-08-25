@@ -5,6 +5,7 @@
 #include "bsp_uart.h"
 #include "table.h"
 #include "Alarm.h"
+#include "Down.h"
 
 void Init_DataRestore(void)
 {
@@ -64,7 +65,16 @@ void Init_DataRestore(void)
 
 void Init_ResetCheck(void)
 {
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)){
+    u32 CheckId;
+
+    I2C_EE_BufferRead((u8 *)&CheckId, FW_ID_ADDR, 4);
+    if(CheckId == FW_VALID_ID){
+        Alarm_Set(ALARM_BIT_RESET_FW);
+        DebugPrint("\r\n %d][INIT] F/W Upgrade Reset ", HAL_GetTick());
+        CheckId = 0;
+        I2C_EE_BufferWrite((u8 *)&CheckId, FW_ID_ADDR, 4);
+    }
+    else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)){
         DebugPrint("\r\n %d][INIT] Power On Reset ", HAL_GetTick());
         Alarm_Set(ALARM_BIT_POWER_ON);
     }

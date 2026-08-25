@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #define MAKER_FRTEK                     0x04
-#define MU_FW_VER    				    0x01
+#define MU_FW_VER    				    0x03
 
 
 
@@ -18,7 +18,6 @@
 #define SystemDataItemWrite(CurSystemDataItem)							I2C_EE_BufferWrite((u8 *)(&CurSystemDataItem), ((u16)(&CurSystemDataItem)-(u16)(&iMyCtrl))+ExtE2pMapSYSTEMSAVEVAR, sizeof(CurSystemDataItem))
 
 #define ExtE2pMapSYSTEMSAVEVAR							0x0010				//1776byte
-#define ExtE2pmapTableStartAddr							0x0700
 
 void OpLedToggle(void);
 void Init_DataRestore(void);

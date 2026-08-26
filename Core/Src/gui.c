@@ -696,7 +696,6 @@ void Gui_ClearAlarmLogMessage(u8 *pRxMsg)
 }
 
 
-u16 TestCrc = 0;
 void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
 {
 	GUI_BODY_t  *pLine;
@@ -704,10 +703,9 @@ void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
     u8 SubData[4];
     u16 SubDataLen;
     u16 FrameNum;
+    u32 FwId  = FW_UPGRADE_ID;
 
     SubDataLen = 4;
-
-    TestCrc = 0;
 
     SubData[GUI_DOWNLOAD_ACK_OFFSET] = GUI_DOWNLOAD_ACK;
     SubData[GUI_DOWNLOAD_REQ_CNT_MSB_OFFSET] = pLine->SubData[1];
@@ -715,18 +713,23 @@ void Gui_SendDownLoadReqMessage(u8 *pRxMsg)
 
     FrameNum = pLine->SubData[1] << 8 | pLine->SubData[2];
 
-    
+    /*
     if(Down_DownloadStart() == FALSE){
         DebugPrint("\r\n %d][GUI][ERR] Gui_SendDownLoadReqMessage Down_DownloadStart ERR", HAL_GetTick());
         // GUI Send 추가
         return;
     }
+    */
 
-
+    I2C_EE_BufferWrite((u8 *)&FwId, FW_ID_ADDR, 4);
+    I2C_EE_BufferWrite((u8 *)&FrameNum, FW_FRAME_SIZE_ADDR, 2);
     DebugPrint("\r\n %d][GUI] Gui_SendDownLoadReqMessage - FrameNum = %d", HAL_GetTick(), FrameNum);
 
+    Init_SwReset();
+   
 
-    Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_REQ, SubData, SubDataLen);
+
+    //Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_REQ, SubData, SubDataLen);
 
 }
 
@@ -816,6 +819,9 @@ void Gui_SendDownLoadConfirmMessage(u8 *pRxMsg)
 
 
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_DOWNLOAD_CONFIRM, SubData, SubDataLen);
+
+    HAL_Delay(200);
+    Init_SwReset();
 
 }
 

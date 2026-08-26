@@ -39,7 +39,7 @@
 #define FW_ID_ADDR											0x2F00				//4byte
 #define FW_SIZE_ADDR				  						0x2F04				//4byte
 #define FW_PATH_ADDR				  						0x2F08				//1byte
-#define FW_FLASH_UES_ADDR		  							0x2F10				//4byte
+#define FW_FRAME_SIZE_ADDR		  							0x2F10				//4byte
 
 #define FW_VALID_ID                     0x7F557F55U
 #define FW_UPGRADE_ID                   0x00050401U

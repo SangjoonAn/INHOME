@@ -35,9 +35,9 @@ u8 Down_DownloadStart(void)
   HAL_FLASH_Unlock();
 
   /* Get the 1st sector to erase */
-  FirstSector = GetSector(FLASH_DOWNLOAD_START_ADDR);
+  FirstSector = GetSector(FLASH_APP_START_ADDR);
   /* Get the number of sector to erase from 1st sector*/
-  NbOfSectors = GetSector(FLASH_DOWNLOAD_END_ADDR) - FirstSector + 1;
+  NbOfSectors = GetSector(FLASH_APP_END_ADDR) - FirstSector + 1;
 
   /* Fill EraseInit structure*/
   EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
@@ -91,11 +91,11 @@ u8 Down_DownloadData(u16 FrameNum, u16 FrameLength, u8 *pData)
 
   TatalDataSize += FrameLength;
 
-  Address = FLASH_DOWNLOAD_START_ADDR + (FrameNum * FrameSize);
+  Address = FLASH_APP_START_ADDR + (FrameNum * FrameSize);
   //DebugPrint("\r\n %d][GUI]Down_DownloadData Address = 0x%x ", HAL_GetTick(), Address);
 
 
-  if ((Address < FLASH_DOWNLOAD_START_ADDR) || ((Address + FrameLength) > (FLASH_DOWNLOAD_END_ADDR + 1U))){
+  if ((Address < FLASH_APP_START_ADDR) || ((Address + FrameLength) > (FLASH_APP_END_ADDR + 1U))){
     DebugPrint("\r\n %d][GUI][ERR] Down_DownloadData Address Range ERR", HAL_GetTick());
     return FALSE; 
   }
@@ -129,13 +129,13 @@ u8 Down_DownloadData(u16 FrameNum, u16 FrameLength, u8 *pData)
 
 u8 Down_CheckData(u16 RcvCrc)
 {
-  u32 Address = FLASH_DOWNLOAD_START_ADDR;
+  u32 Address = FLASH_APP_START_ADDR;
   u8  ReadBuffer[128];
   u16 ReadSize;
   u32 DataSize;
   u16 Crc = CRC_16_SEED;
   u32 FwId=FW_UPGRADE_ID;
-  
+
   DataSize = TatalDataSize;
 
 

@@ -38,11 +38,13 @@ void Alarm_Init(void)
 
     if (I2C_EE_BufferRead((u8 *)&gAlarm.LogIndex, ALARM_LOG_WRITE_INDEX_ADDR, sizeof(gAlarm.LogIndex)) != EEPROM_OK)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] ALARM_LOG_WRITE_INDEX_ADDR ERR ", HAL_GetTick());
         gAlarm.LogIndex = 0U;
     }
 
     if (gAlarm.LogIndex >= ALARM_LOG_TOTAL_COUNT)
     {
+        DebugPrint("\r\n %d][ALARM][ERR] LogIndex >= ALARM_LOG_TOTAL_COUNT ERR ", HAL_GetTick());
         gAlarm.LogIndex = 0U;
     }
 
@@ -502,7 +504,7 @@ u8 Alarm_LogClear(void)
         return FALSE;
     }
 
-
+    Alarm_LogSave(ALARM_CODE_HISTORY_CLEAR);
 
 
 

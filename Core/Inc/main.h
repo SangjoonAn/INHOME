@@ -59,6 +59,26 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define TX_ATT_EN3_Pin GPIO_PIN_5
+#define TX_ATT_EN3_GPIO_Port GPIOE
+#define TX_ATT_EN2_Pin GPIO_PIN_6
+#define TX_ATT_EN2_GPIO_Port GPIOE
+#define TX_ATT_EN1_Pin GPIO_PIN_7
+#define TX_ATT_EN1_GPIO_Port GPIOE
+#define TX_ATT_DATA_Pin GPIO_PIN_8
+#define TX_ATT_DATA_GPIO_Port GPIOE
+#define TX_ATT_CLK_Pin GPIO_PIN_9
+#define TX_ATT_CLK_GPIO_Port GPIOE
+#define RX_ATT_EN3_Pin GPIO_PIN_10
+#define RX_ATT_EN3_GPIO_Port GPIOE
+#define RX_ATT_EN2_Pin GPIO_PIN_11
+#define RX_ATT_EN2_GPIO_Port GPIOE
+#define RX_ATT_EN1_Pin GPIO_PIN_12
+#define RX_ATT_EN1_GPIO_Port GPIOE
+#define RX_ATT_DATA_Pin GPIO_PIN_13
+#define RX_ATT_DATA_GPIO_Port GPIOE
+#define RX_ATT_CLK_Pin GPIO_PIN_14
+#define RX_ATT_CLK_GPIO_Port GPIOE
 #define LED_TX_Pin GPIO_PIN_8
 #define LED_TX_GPIO_Port GPIOA
 #define LED_POWER_Pin GPIO_PIN_11

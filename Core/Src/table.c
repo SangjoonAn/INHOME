@@ -27,6 +27,21 @@ s8  TxBalanceAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 s8  RxGainAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
 s8  RxBalanceAttTable[64] = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
 
+s8 TxTempAttTable[23]={6, 5, 4, 3, 3, 2, 2, 2, 2, 1, 1, 0,  0, 0, 0, 0, -1, -2, -2,-3, -4, -5, -6};
+s8 RxTempAttTable[23]={6, 5, 4, 3, 3, 2, 2, 2, 2, 1, 1, 0,  0, 0, 0, 0, -1, -2, -2,-3, -4, -5, -6};
+
+//u8 ATT_Table[61]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60};
+
+u8 ATT_Table[61] = {
+     0,  2,  4,  6,  8, 10, 12, 14, 16, 18,
+    20, 22, 24, 26, 28, 30, 32, 34, 36, 38,
+    40, 42, 44, 46, 48, 50, 52, 54, 56, 58,
+    60, 62, 64, 66, 68, 70, 72, 74, 76, 78,
+    80, 82, 84, 86, 88, 90, 92, 94, 96, 98,
+   100,102,104,106,108,110,112,114,116,118,
+   120
+};
+
 /*===========================================================
  * Global Variables
  *==========================================================*/
@@ -37,21 +52,21 @@ TABLE_INFO_LIST_t gTableInfo =
 {
     {
         /* Start, Step, Length, StartAddress, DataSize, DataPtr */
-        {0, 1, 0, mTX_DET,              DATA_SIZE_2, (u8 *)gTableData.TxDet        ,0,0,ConvTablePower10},
-        {0, 1, 0, mRX_DET,              DATA_SIZE_2, (u8 *)gTableData.RxDet        ,0,0,ConvTablePower10},
-        {0, 1, 0, mTX_TEMP_ADJ,         DATA_SIZE_2, (u8 *)gTableData.Tx_TempAdj   ,0,0,ConvTablePower10},
-        {0, 1, 0, mRX_TEMP_ADJ,         DATA_SIZE_2, (u8 *)gTableData.Rx_TempAdj   ,0,0,ConvTablePower10},
+        {30, -2, 41, mTX_DET,              DATA_SIZE_2, (u8 *)gTableData.TxDet        ,0,0,ConvTablePower10},
+        {54, -2, 27, mRX_DET,              DATA_SIZE_2, (u8 *)gTableData.RxDet        ,0,0,ConvTablePower10},
+        {0, 1, 0, mRESERVED3,              DATA_SIZE_2, (u8 *)0                         ,0,0,0},
+        {0, 1, 0, mRESERVED4,              DATA_SIZE_2, (u8 *)0                         ,0,0,0},
 
-        {0, 1, 0, mTX_GAIN_ATT,         DATA_SIZE_1, gTableData.TxGainAtt          ,0,0,0},
-        {0, 1, 0, mTX_BALANCE_ATT,      DATA_SIZE_1, gTableData.TxBalanceAtt       ,0,0,0},
-        {0, 1, 0, mRX_GAIN_ATT,         DATA_SIZE_1, gTableData.RxGainAtt          ,0,0,0},
-        {0, 1, 0, mRX_BALANCE_ATT,      DATA_SIZE_1, gTableData.RxBalanceAtt       ,0,0,0},
+        {63, -1, 64, mTX_GAIN_ATT,         DATA_SIZE_1, gTableData.TxGainAtt          ,0,0,0},
+        {63, -1, 64, mTX_BALANCE_ATT,      DATA_SIZE_1, gTableData.TxBalanceAtt       ,0,0,0},
+        {63, -1, 64, mRX_GAIN_ATT,         DATA_SIZE_1, gTableData.RxGainAtt          ,0,0,0},
+        {63, -1, 64, mRX_BALANCE_ATT,      DATA_SIZE_1, gTableData.RxBalanceAtt       ,0,0,0},
 
-        {0, 0, 0, mRESERVED8,           DATA_SIZE_1, 0                              ,0,0,0},
-        {0, 0, 0, mRESERVED9,           DATA_SIZE_1, 0                              ,0,0,0},
-        {0, 0, 0, mRESERVED10,          DATA_SIZE_1, 0                              ,0,0,0},
-        {0, 0, 0, mRESERVED11,          DATA_SIZE_1, 0                              ,0,0,0},
-        {0, 0, 0, mRESERVED12,          DATA_SIZE_1, 0                              ,0,0,0}
+        {-60, 10, 0, mTX_TEMP_ADJ,            DATA_SIZE_1, gTableData.Tx_TempAdj        ,0,0,0},
+        {-60, 10, 0, mRX_TEMP_ADJ,            DATA_SIZE_1, gTableData.Rx_TempAdj        ,0,0,0},
+        {0, 0, 0, mRESERVED10,             DATA_SIZE_1, 0                              ,0,0,0},
+        {0, 0, 0, mRESERVED11,             DATA_SIZE_1, 0                              ,0,0,0},
+        {0, 0, 0, mRESERVED12,             DATA_SIZE_1, 0                              ,0,0,0}
     }
 };
 
@@ -334,6 +349,7 @@ void ConvTablePower10(u8 TableIndex)
     s16 AdOffset;
     s16 TableRange;
     s16 TableOffset;
+    s32 MeanData;
 
     /*-------------------------------------------------------
      * Table 정보 확인
@@ -378,7 +394,8 @@ void ConvTablePower10(u8 TableIndex)
      *------------------------------------------------------*/
     if (AdResult > (pData[0]))
     {
-        pInfo->MeanData = (StartNum - TableStep) * 10;
+        //pInfo->MeanData = (StartNum - TableStep) * 10;
+        pInfo->MeanData = (StartNum - TableStep) * 5;
         return;
     }
 
@@ -387,23 +404,89 @@ void ConvTablePower10(u8 TableIndex)
      *------------------------------------------------------*/
     for (i = 1; i < (s16)pInfo->Length; i++)
     {
-        TableOffset =  (s16)((pData[i - 1] - pData[i]) / 2);
+        /*
+         * ADC Table 범위
+         *
+         * 예:
+         * pData[16] = 2029
+         * pData[17] = 1990
+         *
+         * TableRange = 39
+         */
+        TableRange = (s32)pData[i - 1] - (s32)pData[i];
 
-        TableRange = (s16)pData[i - 1] - (s16)pData[i];
         if (TableRange <= 0)
         {
             pInfo->MeanData = 0;
+
+            DebugPrint("\r\n[%d][TABLE][ERR]ConvTablePower10 Table Error ",HAL_GetTick());
             return;
         }
-        TableOffset = TableRange / 2;
 
-        if (AdResult > ((s16)pData[i] - TableOffset))
+
+        /*
+         * 현재 ADC가 현재 구간에 있는지 확인
+         *
+         * ADC Table이 큰 값 → 작은 값 순서이므로
+         *
+         * pData[i-1] >= AdResult >= pData[i]
+         */
+        if (AdResult >= pData[i])
         {
-            BaseData = (StartNum + (TableStep * (i - 1))) * 10;
+            /*------------------------------------------------
+             * 이전 Table의 dB 값
+             *
+             * i = 17이면
+             *
+             * StartNum  = 30
+             * TableStep = -2
+             *
+             * BaseData =
+             * (30 + (-2 * 16)) * 10
+             * = -20
+             *
+             * 즉 -2.0 dB
+             *------------------------------------------------*/
+            BaseData = ((s32)StartNum + ((s32)TableStep * (i - 1))) * 10;
 
-            AdOffset = (s16)AdResult - ((s16)pData[i - 1] - TableOffset);
+            /*------------------------------------------------
+             * 이전 ADC 값에서 현재 ADC까지 이동한 거리
+             *
+             * 2029 → 2000
+             *
+             * AdOffset = 2029 - 2000
+             *          = 29
+             *------------------------------------------------*/
+            AdOffset = (s32)pData[i - 1] - (s32)AdResult;
 
-            pInfo->MeanData = BaseData - (((s32)AdOffset * TableStep * 10) / TableRange);
+
+            /*------------------------------------------------
+             * 선형 보간
+             *
+             * MeanData =
+             * BaseData
+             * + (AdOffset / TableRange)
+             *   * (TableStep * 10)
+             *
+             * 예:
+             *
+             * BaseData   = -20
+             * AdOffset   = 29
+             * TableRange = 39
+             * TableStep  = -2
+             *
+             * MeanData =
+             * -20 + (29 * -2 * 10) / 39
+             *
+             * = -20 - 14
+             * = -34
+             *
+             * → -3.4 dB
+             *------------------------------------------------*/
+            MeanData = BaseData + ((AdOffset * (s32)TableStep * 10) / TableRange);
+            //Start/Step이 2배로 저장되어 있으므로 MeanData를 1/2로 나누어 실제 dB 값으로 변환
+            MeanData = MeanData >> 1;
+            pInfo->MeanData = (s16)MeanData;
 
             return;
         }
@@ -412,49 +495,163 @@ void ConvTablePower10(u8 TableIndex)
     /*-------------------------------------------------------
      * 마지막 Table보다 낮은 영역
      *------------------------------------------------------*/
-    pInfo->MeanData =(StartNum - TableStep + (i * TableStep)) * 10;
+    //pInfo->MeanData =(StartNum - TableStep + (i * TableStep)) * 10;
+    pInfo->MeanData =(StartNum - TableStep + (i * TableStep)) * 5;
 }
 
-// 입력 온도 -> 테이블 시작 온도와 차이 -> 테이블 항목 계산
-s8 Table_GetTempAtt(s8 Temp, u8 TableIndex )
+// 입력 ATT -> Table 시작 ATT와 차이 -> Table 항목 계산
+// Table Start/Step은 실제 ATT 값의 2배로 저장
+// 입력 ATT도 동일한 Scale
+s8 Table_GetAttOffset(s8 Att, u8 TableIndex)
 {
-    s8 Step;
-    u16 Index;
+    s16 Step;
+    s16 Index;
+    s16 Diff;
     TABLE_INFO_t *pInfo;
+
+    /* Table Index 범위 확인 */
+    if (TableIndex >= TABLE_INDEX_COUNT)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetAttOffset() TableIndex >= TABLE_INDEX_COUNT",
+                   HAL_GetTick());
+        return 0;
+    }
 
     pInfo = &gTableInfo.Table[TableIndex];
 
-    /* Table Index 범위 확인 */ 
-    if (TableIndex >= TABLE_INDEX_COUNT){ 
-        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetTempAtt() TableIndex >= TABLE_INDEX_COUNT", HAL_GetTick());
-        return 0; 
+    /* Table Length 확인 */
+    if (pInfo->Length == 0U)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetAttOffset() Table Length == 0",
+                   HAL_GetTick());
+        return 0;
     }
 
-    if (pInfo->Length == 0U) return 0;
-
-
-    /* 온도 → Table Index 변환 */
-    Temp -= pInfo->Start;
-    Step = pInfo->Step;
-
-    if(Step > 0){
-        Index = Temp / Step;
+    /* Data Pointer 확인 */
+    if (pInfo->DataPtr == NULL)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetAttOffset() DataPtr == NULL",
+                   HAL_GetTick());
+        return 0;
     }
-    else Index = 0;
+
+    /*
+     * ATT -> Table Index
+     *
+     * Att * 2 : Table Scale에 맞게 변환
+     *
+     * 예)
+     * Att   = 60 (30dB)
+     * Start = -60 (-30 dB)
+     * Step  = 10 (5 dB)
+     *
+     * Index = (60 - (-60)) / 10
+     *       = 12
+     */
+    Diff = ((s16)Att) - (s16)pInfo->Start;
+    Step = (s16)pInfo->Step;
+
+    if (Step != 0)
+    {
+        Index = Diff / Step;
+    }
+    else
+    {
+        Index = 0;
+    }
 
     /* 최소 Index 제한 */
-    if(Index < 0) Index = 0;
-
-    if(Index >= pInfo->Length){
-        Index = pInfo->Length - 1;
+    if (Index < 0)
+    {
+        Index = 0;
     }
 
+    /* 최대 Index 제한 */
+    if (Index >= (s16)pInfo->Length)
+    {
+        Index = (s16)pInfo->Length - 1;
+    }
 
-    if (pInfo->DataPtr == NULL) return 0;
-
-    return (s8)((u8 *)pInfo->DataPtr)[Index];
-
+    return ((s8 *)pInfo->DataPtr)[Index];
 }
+
+
+// 입력 온도 -> Table 시작 온도와 차이 -> Table 항목 계산
+// Table Start/Step은 0.5℃ 단위를 1로 표현하기 위해 2배 저장
+// 입력 온도도 *2하여 동일한 Scale로 계산
+s8 Table_GetTempAtt(s8 Temp, u8 TableIndex)
+{
+    s16 Step;
+    s16 Index;
+    s16 Diff;
+    TABLE_INFO_t *pInfo;
+
+    /* Table Index 범위 확인 */
+    if (TableIndex >= TABLE_INDEX_COUNT)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetTempAtt() TableIndex >= TABLE_INDEX_COUNT",
+                   HAL_GetTick());
+        return 0;
+    }
+
+    pInfo = &gTableInfo.Table[TableIndex];
+
+    /* Table Length 확인 */
+    if (pInfo->Length == 0U)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetTempAtt() pInfo->Length == 0",
+                   HAL_GetTick());
+        return 0;
+    }
+
+    /* Data Pointer 확인 */
+    if (pInfo->DataPtr == NULL)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetTempAtt() DataPtr == NULL",
+                   HAL_GetTick());
+        return 0;
+    }
+
+    /*
+     * Temperature -> Table Index
+     *
+     * Temp     : 실제 온도
+     * Temp * 2 : Table Scale에 맞게 변환
+     *
+     * 예)
+     * Temp  = 32℃
+     * Start = 63 (31.5℃)
+     * Step  = 1  (0.5℃)
+     *
+     * Index = (64 - 63) / 1 = 1
+     */
+    Diff = ((s16)Temp * 2) - (s16)pInfo->Start;
+    Step = (s16)pInfo->Step;
+
+    if (Step != 0)
+    {
+        Index = Diff / Step;
+    }
+    else
+    {
+        Index = 0;
+    }
+
+    /* 최소 Index 제한 */
+    if (Index < 0)
+    {
+        Index = 0;
+    }
+
+    /* 최대 Index 제한 */
+    if (Index >= (s16)pInfo->Length)
+    {
+        Index = (s16)pInfo->Length - 1;
+    }
+
+    return ((s8 *)pInfo->DataPtr)[Index];
+}
+
 
 void Table_SetFactory(void)
 {
@@ -522,4 +719,27 @@ u8 Table_SetAdResult(u8 TableIndex, u16 AdResult)
     }
 
     return TRUE;
+}
+
+s16 Table_GetMeanData(u8 TableIndex)
+{
+    TABLE_INFO_t *pInfo;
+
+    if (TableIndex >= TABLE_INDEX_COUNT)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetMeanData() TableIndex(%d) >= TABLE_INDEX_COUNT", HAL_GetTick(), TableIndex);
+        return 0;
+    }
+
+    pInfo = &gTableInfo.Table[TableIndex];
+
+    if (pInfo->DataPtr == NULL)
+    {
+        DebugPrint("\r\n[%d][TABLE][ERR] Table_GetMeanData() DataPtr NULL", HAL_GetTick());
+        return 0;
+    }
+
+    pInfo->AdConvertMean(TableIndex);
+
+    return pInfo->MeanData;
 }

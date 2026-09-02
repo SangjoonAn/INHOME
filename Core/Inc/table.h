@@ -21,14 +21,14 @@
 
 #define TABLE_IDX_TX_DET            0U
 #define TABLE_IDX_RX_DET            1U
-#define TABLE_IDX_SLEEP_DET         2U
-#define TABLE_IDX_RESERVED3         3U
+#define TABLE_IDX_RESERVED3         2U
+#define TABLE_IDX_RESERVED4         3U
 #define TABLE_IDX_TX_GAIN_ATT       4U
 #define TABLE_IDX_TX_BALANCE_ATT    5U
 #define TABLE_IDX_RX_GAIN_ATT       6U
 #define TABLE_IDX_RX_BALANCE_ATT    7U
-#define TABLE_IDX_RESERVED8         8U
-#define TABLE_IDX_RESERVED9         9U
+#define TABLE_IDX_TX_TEMP_ADJ       8U
+#define TABLE_IDX_RX_TEMP_ADJ       9U
 #define TABLE_IDX_RESERVED10        10U
 #define TABLE_IDX_RESERVED11        11U
 #define TABLE_IDX_RESERVED12        12U
@@ -70,16 +70,17 @@
  *==========================================================*/
 #define mTX_DET         (TABLE_DATA_BASE_ADDR)
 #define mRX_DET         (mTX_DET + (TABLE_MAX_SIZE * DATA_SIZE_2))
-#define mTX_TEMP_ADJ      (mRX_DET + (TABLE_MAX_SIZE * DATA_SIZE_2))
-#define mRX_TEMP_ADJ      (mTX_TEMP_ADJ + (TABLE_MAX_SIZE * DATA_SIZE_2))
-#define mTX_GAIN_ATT    (mRX_TEMP_ADJ + (TABLE_MAX_SIZE * DATA_SIZE_2))
+#define mRESERVED3      (mRX_DET + (TABLE_MAX_SIZE * DATA_SIZE_2))
+#define mRESERVED4      (mRESERVED3 + (TABLE_MAX_SIZE * DATA_SIZE_2))
 
+#define mTX_GAIN_ATT    (mRESERVED4 + (TABLE_MAX_SIZE * DATA_SIZE_2))
 #define mTX_BALANCE_ATT (mTX_GAIN_ATT + (TABLE_MAX_SIZE * DATA_SIZE_1))
 #define mRX_GAIN_ATT    (mTX_BALANCE_ATT + (TABLE_MAX_SIZE * DATA_SIZE_1))
 #define mRX_BALANCE_ATT (mRX_GAIN_ATT + (TABLE_MAX_SIZE * DATA_SIZE_1))
-#define mRESERVED8      (mRX_BALANCE_ATT + (TABLE_MAX_SIZE * DATA_SIZE_1))
-#define mRESERVED9      (mRESERVED8 + (TABLE_MAX_SIZE * DATA_SIZE_1))
-#define mRESERVED10     (mRESERVED9 + (TABLE_MAX_SIZE * DATA_SIZE_1))
+
+#define mTX_TEMP_ADJ    (mRX_BALANCE_ATT + (TABLE_MAX_SIZE * DATA_SIZE_1))
+#define mRX_TEMP_ADJ    (mTX_TEMP_ADJ + (TABLE_MAX_SIZE * DATA_SIZE_1))
+#define mRESERVED10     (mRX_TEMP_ADJ + (TABLE_MAX_SIZE * DATA_SIZE_1))
 #define mRESERVED11     (mRESERVED10 + (TABLE_MAX_SIZE * DATA_SIZE_1))
 #define mRESERVED12     (mRESERVED11 + (TABLE_MAX_SIZE * DATA_SIZE_1))
 
@@ -108,16 +109,16 @@ typedef struct
 {
     u16 TxDet[TABLE_MAX_SIZE];
     u16 RxDet[TABLE_MAX_SIZE];
-    u16 Tx_TempAdj[TABLE_MAX_SIZE];
-    u16 Rx_TempAdj[TABLE_MAX_SIZE];
+    u16 Reserved3[TABLE_MAX_SIZE];
+    u16 Reserved4[TABLE_MAX_SIZE];
 
     u8 TxGainAtt[TABLE_MAX_SIZE];
     u8 TxBalanceAtt[TABLE_MAX_SIZE];
     u8 RxGainAtt[TABLE_MAX_SIZE];
     u8 RxBalanceAtt[TABLE_MAX_SIZE];
 
-    u8 Reserved8[TABLE_MAX_SIZE];
-    u8 Reserved9[TABLE_MAX_SIZE];
+    u8 Tx_TempAdj[TABLE_MAX_SIZE];
+    u8 Rx_TempAdj[TABLE_MAX_SIZE];
     u8 Reserved10[TABLE_MAX_SIZE];
     u8 Reserved11[TABLE_MAX_SIZE];
     u8 Reserved12[TABLE_MAX_SIZE];
@@ -171,7 +172,9 @@ u8 Table_SetAdResult(u8 TableIndex, u16 AdResult);
 void Table_SetFactory(void);
 u8 Table_LoadTable(u8 TableIndex, u8 *pSubData, u16 *pSubDataLength);
 void ConvTablePower10(u8 TableIndex);
-
+s8 Table_GetAttOffset(s8 Att, u8 TableIndex);
+s8 Table_GetTempAtt(s8 Temp, u8 TableIndex);
+s16 Table_GetMeanData(u8 TableIndex);
 
 extern u16 TxDetAdc[41];
 extern s8 TxGainAttTableOffset[64];

@@ -159,10 +159,7 @@ void BSP_UART4_Print(const char *fmt, ...)
 
     va_start(args, fmt);
 
-    vsnprintf(buf,
-              sizeof(buf),
-              fmt,
-              args);
+    vsnprintf(buf, sizeof(buf), fmt, args);
 
     va_end(args);
 

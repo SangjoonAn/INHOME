@@ -7,7 +7,9 @@
 #define Time1mSec		1
 #define Time10mSec		10
 #define Time100mSec		100
+#define Time500mSec		500
 #define Time1Sec		1000L
+#define Time2Sec		2000L
 
 #define Time1Min		1000L*60L
 #define Time1Hour		(Time1Min*60L)
@@ -33,10 +35,9 @@ enum
 	TimerAdcTemperature,
 	TimerAdcPowerDetect,
 	TimerAlarmCheck,
-	TimerDn,
-	TimerFrontLED,		
-	
-	TimerSleepOn,
+	TimerTxAlcCheck,
+	TimerRxAlcCheck,		
+	TimerOscCheck,
 	TimerLEDBlink,	//10
 	/////////////////////////////////////
 	TimerALC_900M,

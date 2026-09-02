@@ -33,11 +33,6 @@
 #define OFS_RCODE                   8
 #define OFS_MSB_SUB_DATA_LENGTH     9
 #define OFS_LSB_SUB_DATA_LENGTH     10
-// Body 내부 오프셋
-#define OFS_RESERVED    0      // 3 byte
-#define OFS_CMD         3      // 1 byte (Type)
-#define OFS_RCODE       4      // 1 byte
-#define OFS_SUBDATA     7      // 가변
 
 // CMD Define
 #define CMD_MAIN_STATUS         0x00

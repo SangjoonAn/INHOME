@@ -12,7 +12,7 @@
 
 
 
-#define INITCHECKNUM					0x10			//V1030,V1031,V1032
+#define INITCHECKNUM					0x01			
 
 
 #define SystemDataItemWrite(CurSystemDataItem)							I2C_EE_BufferWrite((u8 *)(&CurSystemDataItem), ((u16)(&CurSystemDataItem)-(u16)(&iMyCtrl))+ExtE2pMapSYSTEMSAVEVAR, sizeof(CurSystemDataItem))
@@ -23,4 +23,5 @@ void OpLedToggle(void);
 void Init_DataRestore(void);
 void Init_SwReset(void);
 void Init_ResetCheck(void);
+void DWT_DelayUs(uint32_t us);
 #endif

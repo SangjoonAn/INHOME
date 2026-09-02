@@ -1,3 +1,4 @@
+#include <Alc.h>
 #include "bsp_init.h"
 #include "project.h"
 #include "common.h"
@@ -6,6 +7,48 @@
 #include "table.h"
 #include "Alarm.h"
 #include "Down.h"
+
+#ifdef STM32F103
+    #include "stm32f1xx.h"   // STM32F103
+#endif
+
+#ifdef STM32F205
+    #include "stm32f2xx.h"   // STM32F205
+#endif
+
+
+
+
+void DWT_Init(void)
+{
+    /* Enable DWT and trace */
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+
+    /* Reset cycle counter */
+    DWT->CYCCNT = 0;
+
+    /* Enable cycle counter */
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
+
+void DWT_DelayUs(uint32_t us)
+{
+    uint32_t startTick;
+    uint32_t delayTicks;
+
+    /*
+     * SystemCoreClock 기준으로 us -> CPU cycle 변환
+     */
+    delayTicks = us * (SystemCoreClock / 1000000U);
+
+    startTick = DWT->CYCCNT;
+
+    while ((uint32_t)(DWT->CYCCNT - startTick) < delayTicks)
+    {
+        __NOP();
+    }
+}
 
 void Init_DataRestore(void)
 {
@@ -43,8 +86,10 @@ void Init_DataRestore(void)
     iMySts.IsoAtt                   = iMyCtrl.IsoAtt;
     iMySts.OscOnOff                 = iMyCtrl.OscOnOff;
 
+    DWT_Init();
     Table_Init();
     Alarm_Init();
+    Alg_AlcInit();
 
     if(iMyCtrl.InitCheckNum!=INITCHECKNUM){
         iMyCtrl.InitCheckNum=INITCHECKNUM;			SystemDataItemWrite(iMyCtrl.InitCheckNum);
@@ -80,8 +125,10 @@ void Init_ResetCheck(void)
     }
     else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)){
         DebugPrint("\r\n %d][INIT] External Reset ", HAL_GetTick());
+        Alarm_Set(ALARM_BIT_RESET_USER);
     }
     else if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)){
+        Alarm_Set(ALARM_BIT_RESET_FW);
         DebugPrint("\r\n %d][INIT] Watch Dog Reset ", HAL_GetTick());
     }
 }

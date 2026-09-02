@@ -32,6 +32,8 @@
 #include "bsp_eep.h"
 #include "gui.h"
 #include "Alarm.h"
+#include "Alc.h"
+#include "bsp_debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,7 +97,7 @@ int main(void)
   __enable_irq();
   /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration-----------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -143,6 +145,8 @@ int main(void)
     Adc_Task();
     Gui_Task();
     Alarm_Task();
+    Alg_AlcTask();
+    Debug_Task();
 
     /* USER CODE END WHILE */
 
@@ -534,6 +538,7 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -541,7 +546,23 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, TX_ATT_EN3_Pin|TX_ATT_EN2_Pin|TX_ATT_EN1_Pin|TX_ATT_DATA_Pin
+                          |TX_ATT_CLK_Pin|RX_ATT_EN3_Pin|RX_ATT_EN2_Pin|RX_ATT_EN1_Pin
+                          |RX_ATT_DATA_Pin|RX_ATT_CLK_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_STATE_GPIO_Port, LED_STATE_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : TX_ATT_EN3_Pin TX_ATT_EN2_Pin TX_ATT_EN1_Pin TX_ATT_DATA_Pin
+                           TX_ATT_CLK_Pin RX_ATT_EN3_Pin RX_ATT_EN2_Pin RX_ATT_EN1_Pin
+                           RX_ATT_DATA_Pin RX_ATT_CLK_Pin */
+  GPIO_InitStruct.Pin = TX_ATT_EN3_Pin|TX_ATT_EN2_Pin|TX_ATT_EN1_Pin|TX_ATT_DATA_Pin
+                          |TX_ATT_CLK_Pin|RX_ATT_EN3_Pin|RX_ATT_EN2_Pin|RX_ATT_EN1_Pin
+                          |RX_ATT_DATA_Pin|RX_ATT_CLK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED_STATE_Pin */
   GPIO_InitStruct.Pin = LED_STATE_Pin;

@@ -14,8 +14,8 @@
 #define UART1TXCURMASK	        (UARTTX1BUFFSIZE-1)
 #define UART1RXCURMASK	        (UARTRX1BUFFSIZE-1)
 
-#define UARTRX4BUFFSIZE        125
-#define UARTTX4BUFFSIZE        125
+#define UARTRX4BUFFSIZE        0x100
+#define UARTTX4BUFFSIZE        0x100
 #define UART4TXCURMASK	        (UARTTX4BUFFSIZE-1)
 #define UART4RXCURMASK	        (UARTRX4BUFFSIZE-1)
 
@@ -34,6 +34,11 @@ void BSP_UART4_Init(void);
 
 u8 BSP_UART1_RxDataExist(void);
 u8 BSP_UART1_GetChar(void);
+void BSP_UART1_PutChar(u8 data);
+
+u8 BSP_UART4_RxDataExist(void);
+u8 BSP_UART4_GetChar(void);
+void BSP_UART4_PutChar(u8 data);
 
 void BSP_UART1_GetRxRingBuffer(u8 **buf, u16 **head, u16 **tail, u16 *size);
 HAL_StatusTypeDef BSP_UART1_Write(u8 *data, u16 len);

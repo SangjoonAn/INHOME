@@ -49,29 +49,28 @@ static void SystemRunTime_Update(void)
 {
 	u16 DayCount;
 
-    iMySts.SystemRunTime[0]++;
+    iMySts.SystemRunTime[4]++;
 
-    if(iMySts.SystemRunTime[0] >= 60)
+    if(iMySts.SystemRunTime[4] >= 60)
     {
-        iMySts.SystemRunTime[0] = 0;
-        iMySts.SystemRunTime[1]++;
+        iMySts.SystemRunTime[4] = 0;
+        iMySts.SystemRunTime[3]++;
 
 		/* 24시간 -> 1일 */
-        if(iMySts.SystemRunTime[1] >= 24)
+        if(iMySts.SystemRunTime[3] >= 24)
         {
-            iMySts.SystemRunTime[1] = 0;
-            iMySts.SystemRunTime[2]++;
+            iMySts.SystemRunTime[3] = 0;
 
-			DayCount = ((u16)iMySts.SystemRunTime[2] << 8)	|  (u16)iMySts.SystemRunTime[3];
+			DayCount = ((u16)iMySts.SystemRunTime[1] << 8)	|  (u16)iMySts.SystemRunTime[2];
 			DayCount++;
 
 			/* 365일 -> 1년 */
 			if(DayCount >= 365){
 				DayCount = 0;
-				iMySts.SystemRunTime[4]++;
+				iMySts.SystemRunTime[0]++;
 			}
-			iMySts.SystemRunTime[2] = (u8)(DayCount >> 8);
-			iMySts.SystemRunTime[3] = (u8)(DayCount & 0xFF);
+			iMySts.SystemRunTime[1] = (u8)(DayCount >> 8);
+			iMySts.SystemRunTime[2] = (u8)(DayCount & 0xFF);
 
         }
     }

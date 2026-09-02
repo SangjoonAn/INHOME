@@ -303,9 +303,31 @@ typedef struct
     u8 Reserved35;
 
     // 036 ~ 053
+    union 
+    { 
+        u8 Data; 
+        struct 
+        { 
+            u8 TxSubAtt :1; /* 0 : 변경 */ 
+            u8 RxSubAtt :1; /* 1 : 변경 */ 
+            u8 Test_TxAtt1 :1; /* 2 : 변경 */ 
+            u8 Test_RxAtt1 :1; /* 3 : 변경 */ 
+            u8 Test_RxAtt2 :1; /* 4 : 변경 */ 
+            u8 Test_ModeAtt :1; /* 5 : 변경 */ 
+            u8 Reserved1    :1; /* 6 : 변경 */ 
+            u8 Reserved2 :1; /* 7 */ 
+        } Bit; 
+    } Flag8;
+    u8 TxSubAtt;
+    u8 RxSubAtt;
+    u8 Test_TxAtt1;
+    u8 Test_RxAtt1;
+    u8 Test_RxAtt2;
+    u8 Test_ModeAtt;
+
     u8 InitCheckNum;
     u16 PreAlarmSts;
-    u8 Reserved39[60];
+    u8 Reserved39[53];
 
     union 
     { 

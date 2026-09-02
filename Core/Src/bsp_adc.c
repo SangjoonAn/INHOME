@@ -66,13 +66,22 @@ void PowerDet_Update(void)
 {
     u16 AdResult;
 
+    //Test
+    TABLE_INFO_t *pInfo;
+    pInfo = &gTableInfo.Table[ADC_NUM_TX_DET];
+
     AdResult = Adc_CalcCleanAverage(gAdc_Buffer[ADC_NUM_TX_DET]);
     iMySts.TxDetVoltage = AdResult;
     Table_SetAdResult(ADC_NUM_TX_DET, AdResult);
+    iMySts.TxOutputPower = Table_GetMeanData(ADC_NUM_TX_DET) + iMyCtrl.TxPowerOffsetOutput;
 
     AdResult = Adc_CalcCleanAverage(gAdc_Buffer[ADC_NUM_RX_DET]);
     iMySts.RxDetVoltage = AdResult;    
     Table_SetAdResult(ADC_NUM_RX_DET, AdResult);   
+    iMySts.RxOutputPower = Table_GetMeanData(ADC_NUM_RX_DET) + iMyCtrl.RxPowerOffsetOutput;
+
+    //TxInputPower 계산할것.
+
 
 }
 

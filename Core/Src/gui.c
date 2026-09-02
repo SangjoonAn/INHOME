@@ -891,11 +891,11 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     pBuf[index++] = pState->IsoLevel;
     pBuf[index++] = pState->IsoMsg;
 
-    pBuf[index++] = pState->SystemRunTime[4];
-    pBuf[index++] = pState->SystemRunTime[3];
-    pBuf[index++] = pState->SystemRunTime[2];
-    pBuf[index++] = pState->SystemRunTime[1];
     pBuf[index++] = pState->SystemRunTime[0];
+    pBuf[index++] = pState->SystemRunTime[1];
+    pBuf[index++] = pState->SystemRunTime[2];
+    pBuf[index++] = pState->SystemRunTime[3];
+    pBuf[index++] = pState->SystemRunTime[4];
 
     pBuf[index++] = pState->Stability;
 

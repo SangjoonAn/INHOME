@@ -16,26 +16,26 @@
 u8 AlcFlag = 0;
 
 
-void Alg_AlcInit(void)
+void Alc_Init(void)
 {
     bsp_timer_set(TimerTxAlcCheck, Time2Sec);
     bsp_timer_set(TimerRxAlcCheck, Time500mSec);
 }
 
 
-void Alg_AlcTask(void)
+void Alc_Task(void)
 {
     if(bsp_timer_TimeOverCheck(TimerTxAlcCheck)){
-        Alg_SetTxAlc();
+        Alc_SetTx();
         bsp_timer_set(TimerTxAlcCheck, Time2Sec);
     }	
     if(bsp_timer_TimeOverCheck(TimerRxAlcCheck)){
-        Alg_SetRxAlc();
+        Alc_SetRx();
         bsp_timer_set(TimerRxAlcCheck, Time500mSec);
     }	
 }
 
-void Alg_SetTxAlc(void)
+void Alc_SetTx(void)
 {
     s16 PowerDiff =0;
     static u8 PreAlcAtt = 0;
@@ -81,7 +81,7 @@ void Alg_SetTxAlc(void)
 }
 
 
-void Alg_SetRxAlc(void)
+void Alc_SetRx(void)
 {
     s16 PowerDiff =0;
     static u8 PreAlcAtt = 0;

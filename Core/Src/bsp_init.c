@@ -7,6 +7,10 @@
 #include "table.h"
 #include "Alarm.h"
 #include "Down.h"
+#include "bsp_adc.h"
+#include "bsp_timer.h"
+#include "gui.h"
+#include "bsp_led.h"
 
 #ifdef STM32F103
     #include "stm32f1xx.h"   // STM32F103
@@ -16,6 +20,18 @@
     #include "stm32f2xx.h"   // STM32F205
 #endif
 
+void bsp_Init(void)
+{
+  bsp_timer_init();
+  BspAdc_Init();
+  bsp_uart_init();
+  Led_Init();
+  Gui_Init();
+  Eep_Init();
+  Alarm_Init();
+  Init_DataRestore();
+  Init_ResetCheck();
+}
 
 
 
@@ -89,7 +105,7 @@ void Init_DataRestore(void)
     DWT_Init();
     Table_Init();
     Alarm_Init();
-    Alg_AlcInit();
+    Alc_Init();
 
     if(iMyCtrl.InitCheckNum!=INITCHECKNUM){
         iMyCtrl.InitCheckNum=INITCHECKNUM;			SystemDataItemWrite(iMyCtrl.InitCheckNum);
@@ -137,4 +153,27 @@ void Init_ResetCheck(void)
 void Init_SwReset(void)
 {
 	HAL_NVIC_SystemReset();
+}
+
+
+void Init_TxAmpOn(void)
+{
+	HAL_GPIO_WritePin(TX_AMP_ONOFF_GPIO_Port, TX_AMP_ONOFF_Pin, ON);
+}
+
+
+void Init_TxAmpOff(void)
+{
+	HAL_GPIO_WritePin(TX_AMP_ONOFF_GPIO_Port, TX_AMP_ONOFF_Pin, OFF);
+}
+
+void Init_RxAmpOn(void)
+{
+	HAL_GPIO_WritePin(RX_AMP_ONOFF_GPIO_Port, RX_AMP_ONOFF_Pin, ON);
+}
+
+
+void Init_RxAmpOff(void)
+{
+	HAL_GPIO_WritePin(RX_AMP_ONOFF_GPIO_Port, RX_AMP_ONOFF_Pin, OFF);
 }

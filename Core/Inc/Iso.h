@@ -10,4 +10,8 @@
 
 
 
+void Iso_Init(void);
+void Iso_Task(void);
+void Iso_Check(void);
+
 #endif /* INC_ISO_H_ */

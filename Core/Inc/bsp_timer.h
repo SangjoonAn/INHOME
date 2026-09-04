@@ -38,9 +38,9 @@ enum
 	TimerTxAlcCheck,
 	TimerRxAlcCheck,		
 	TimerOscCheck,
-	TimerLEDBlink,	//10
+	TimerShutdownCheck,	//10
 	/////////////////////////////////////
-	TimerALC_900M,
+	TimerISOCheck,
 	TimerALC_1_8G,
 	TimerALC_2_1G,
 	

@@ -498,6 +498,61 @@ void Gui_SendControlMessage(u8 *pRxMsg)
         }
     }
 
+    if(pCtrl->Flag8.Data){
+        if(pCtrl->Flag8.Bit.TxSubAtt){
+            iMyCtrl.TxSubAtt = pCtrl->TxSubAtt;
+            SystemDataItemWrite(iMyCtrl.TxSubAtt);
+            iMySts.TxSubAtt = iMyCtrl.TxSubAtt;
+            DebugPrint("\r\n %d][GUI] TxSubAtt set to %d", HAL_GetTick(), iMyCtrl.TxSubAtt);
+        }
+        if(pCtrl->Flag8.Bit.RxSubAtt){
+            iMyCtrl.RxSubAtt = pCtrl->RxSubAtt;
+            SystemDataItemWrite(iMyCtrl.RxSubAtt);
+            iMySts.RxSubAtt = iMyCtrl.RxSubAtt;
+            DebugPrint("\r\n %d][GUI] RxSubAtt set to %d", HAL_GetTick(), iMyCtrl.RxSubAtt);
+        }
+        if(pCtrl->Flag8.Bit.Test_ModeAtt){
+            iMyCtrl.Test_ModeAtt = pCtrl->Test_ModeAtt;
+            SystemDataItemWrite(iMyCtrl.Test_ModeAtt);
+            iMySts.Test_ModeAtt = iMyCtrl.Test_ModeAtt;
+            DebugPrint("\r\n %d][GUI] Test_ModeAtt set to %d", HAL_GetTick(), iMyCtrl.Test_ModeAtt);
+        }
+        if(pCtrl->Flag8.Bit.Test_TxAtt1){
+            iMyCtrl.Test_TxAtt1 = pCtrl->Test_TxAtt1;
+            SystemDataItemWrite(iMyCtrl.Test_TxAtt1);
+            iMySts.Test_TxAtt1 = iMyCtrl.Test_TxAtt1;
+            DebugPrint("\r\n %d][GUI] Test_TxAtt1 set to %d", HAL_GetTick(), iMyCtrl.Test_TxAtt1);
+        }
+        if(pCtrl->Flag8.Bit.Test_RxAtt1){
+            iMyCtrl.Test_RxAtt1 = pCtrl->Test_RxAtt1;
+            SystemDataItemWrite(iMyCtrl.Test_RxAtt1);
+            iMySts.Test_RxAtt1 = iMyCtrl.Test_RxAtt1;
+            DebugPrint("\r\n %d][GUI] Test_RxAtt1 set to %d", HAL_GetTick(), iMyCtrl.Test_RxAtt1);
+        }
+        if(pCtrl->Flag8.Bit.Test_RxAtt2){
+            iMyCtrl.Test_RxAtt2 = pCtrl->Test_RxAtt2;
+            SystemDataItemWrite(iMyCtrl.Test_RxAtt2);
+            iMySts.Test_RxAtt2 = iMyCtrl.Test_RxAtt2;
+            DebugPrint("\r\n %d][GUI] Test_RxAtt2 set to %d", HAL_GetTick(), iMyCtrl.Test_RxAtt2);
+        }
+        if(pCtrl->Flag8.Bit.SysFreq){
+            iMyCtrl.SysFreq = pCtrl->SysFreq;
+            SystemDataItemWrite(iMyCtrl.SysFreq);
+            iMySts.SysFreq = iMyCtrl.SysFreq;
+            DebugPrint("\r\n %d][GUI] SysFreq set to %d", HAL_GetTick(), iMyCtrl.SysFreq);
+        }
+        if(pCtrl->Flag8.Bit.IsoThreshold){
+            iMyCtrl.IsoThreshold = pCtrl->IsoThreshold;
+            SystemDataItemWrite(iMyCtrl.IsoThreshold);
+            iMySts.IsoThreshold = iMyCtrl.IsoThreshold;
+            DebugPrint("\r\n %d][GUI] IsoThreshold set to %d", HAL_GetTick(), iMyCtrl.IsoThreshold);
+        }
+
+
+
+
+    }
+
     Gui_SendMessage(pLine->SourceID, pLine->DestID, CMD_MAIN_CTRL, (u8 *)&iMyCtrl, sizeof(MY_CONTROL_t));
     
         
@@ -944,9 +999,9 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
 
     pBuf[index++] = pState->RxAttIsoOffset;
 
-    pBuf[index++] = pState->Reserve119;
+    pBuf[index++] = pState->TemperatureComp;
 
-    pBuf[index++] = pState->Reserve120;
+    pBuf[index++] = pState->TemperatureOffset;
 
     pBuf[index++] = (u8)pState->TxAttGainStep;
     pBuf[index++] = (u8)pState->TxAttBalanceStep;
@@ -982,6 +1037,15 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
     pBuf[index++] = pState->TxAlcAtt;
     pBuf[index++] = pState->RxAlcAtt;
     pBuf[index++] = pState->SubVersion;
+
+    pBuf[index++] = pState->TxSubAtt;
+    pBuf[index++] = pState->RxSubAtt;
+    pBuf[index++] = pState->Test_ModeAtt;
+    pBuf[index++] = pState->Test_TxAtt1;
+    pBuf[index++] = pState->Test_RxAtt1;
+    pBuf[index++] = pState->Test_RxAtt2;
+    pBuf[index++] = pState->SysFreq;
+    PutU16BE(&pBuf[index], (u16)pState->IsoThreshold); index += 2;
 
     memcpy(&pBuf[index], pState->Reserve149, sizeof(pState->Reserve149)); 
     index += sizeof(pState->Reserve149);

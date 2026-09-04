@@ -14,9 +14,9 @@
 #define TX_ALC_ATT_MIN_NUM     0
 #define TX_ALC_ATT_MAX_NUM     40
 
-void Alg_AlcInit(void);
-void Alg_AlcTask(void);
-void Alg_SetTxAlc(void);
-void Alg_SetRxAlc(void);
+void Alc_Init(void);
+void Alc_Task(void);
+void Alc_SetTx(void);
+void Alc_SetRx(void);
 
 #endif /* INC_ALC_H_ */

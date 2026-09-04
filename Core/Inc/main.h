@@ -79,12 +79,18 @@ void Error_Handler(void);
 #define RX_ATT_DATA_GPIO_Port GPIOE
 #define RX_ATT_CLK_Pin GPIO_PIN_14
 #define RX_ATT_CLK_GPIO_Port GPIOE
-#define LED_TX_Pin GPIO_PIN_8
-#define LED_TX_GPIO_Port GPIOA
-#define LED_POWER_Pin GPIO_PIN_11
+#define LED_RX_SHUTDOWN_Pin GPIO_PIN_9
+#define LED_RX_SHUTDOWN_GPIO_Port GPIOC
+#define LED_POWER_Pin GPIO_PIN_8
 #define LED_POWER_GPIO_Port GPIOA
+#define LED_TX_SHUTDOWN_Pin GPIO_PIN_11
+#define LED_TX_SHUTDOWN_GPIO_Port GPIOA
 #define LED_STATE_Pin GPIO_PIN_1
 #define LED_STATE_GPIO_Port GPIOD
+#define TX_AMP_ONOFF_Pin GPIO_PIN_2
+#define TX_AMP_ONOFF_GPIO_Port GPIOD
+#define RX_AMP_ONOFF_Pin GPIO_PIN_3
+#define RX_AMP_ONOFF_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 extern ADC_HandleTypeDef hadc1;

@@ -140,7 +140,6 @@ typedef struct
     u16 TxDetVoltage;
     u16 RxDetVoltage;
     u16 SleepModeVoltage;
-    s16 SleepModeLimitLevel;         
     s16 SysTemperVoltage;            // 108~109
 
     // 110~119
@@ -153,10 +152,10 @@ typedef struct
     s8  RxAttGainOffset;               // 116
     s8  RxAttBalanceOffset;             // 117
     u8  RxAttIsoOffset;                // 118
-    u8  Reserve119;                    // 119
+    u8  TemperatureComp;                    // 119
 
     // 120~129
-    u8  Reserve120;                    // 120
+    u8  TemperatureOffset;                    // 120
     s8  TxAttGainStep;                 // 121
     s8  TxAttBalanceStep;              // 122
     s8  RxAttGainStep;                 // 123
@@ -188,7 +187,15 @@ typedef struct
     u8 RxAlcAtt; // 147
     u8 SubVersion; // 148
 
-    u8  Reserve149[11];                    // 139
+    u8 TxSubAtt;
+    u8 RxSubAtt;
+    u8 Test_ModeAtt;
+    u8 Test_TxAtt1;
+    u8 Test_RxAtt1;
+    u8 Test_RxAtt2;
+    u8 SysFreq;
+    s16 IsoThreshold;
+    u8  Reserve149[2];                    // 139
 } MY_STATE_t;
 #pragma pack(pop)
 
@@ -300,7 +307,7 @@ typedef struct
 
     s8 SleepModeLimit;
 
-    u8 Reserved35;
+    u8 Reserved35[4];
 
     // 036 ~ 053
     union 
@@ -308,26 +315,27 @@ typedef struct
         u8 Data; 
         struct 
         { 
-            u8 TxSubAtt :1; /* 0 : 변경 */ 
-            u8 RxSubAtt :1; /* 1 : 변경 */ 
-            u8 Test_TxAtt1 :1; /* 2 : 변경 */ 
-            u8 Test_RxAtt1 :1; /* 3 : 변경 */ 
-            u8 Test_RxAtt2 :1; /* 4 : 변경 */ 
-            u8 Test_ModeAtt :1; /* 5 : 변경 */ 
-            u8 Reserved1    :1; /* 6 : 변경 */ 
-            u8 Reserved2 :1; /* 7 */ 
+            u8 TxSubAtt :1;         /* 0 : 변경 */ 
+            u8 RxSubAtt :1;         /* 1 : 변경 */ 
+            u8 Test_ModeAtt :1;     /* 2 : 변경 */ 
+            u8 Test_TxAtt1 :1;      /* 3 : 변경 */ 
+            u8 Test_RxAtt1 :1;      /* 4 : 변경 */ 
+            u8 Test_RxAtt2 :1;      /* 5 : 변경 */ 
+            u8 SysFreq     :1;     /* 6 : 변경 */ 
+            u8 IsoThreshold :1;      /* 7 */ 
         } Bit; 
     } Flag8;
     u8 TxSubAtt;
     u8 RxSubAtt;
+    u8 Test_ModeAtt;
     u8 Test_TxAtt1;
     u8 Test_RxAtt1;
     u8 Test_RxAtt2;
-    u8 Test_ModeAtt;
 
+    u8 SysFreq;
+    s16 IsoThreshold;
     u8 InitCheckNum;
-    u16 PreAlarmSts;
-    u8 Reserved39[53];
+    u8 Reserved39[52];
 
     union 
     { 

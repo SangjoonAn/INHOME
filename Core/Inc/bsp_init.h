@@ -19,9 +19,16 @@
 
 #define ExtE2pMapSYSTEMSAVEVAR							0x0010				//1776byte
 
-void OpLedToggle(void);
+void bsp_Init(void);
+void Led_StatusToggle(void);
 void Init_DataRestore(void);
 void Init_SwReset(void);
 void Init_ResetCheck(void);
 void DWT_DelayUs(uint32_t us);
+
+void Init_TxAmpOn(void);
+void Init_TxAmpOff(void);
+void Init_RxAmpOn(void);
+void Init_RxAmpOff(void);
+
 #endif

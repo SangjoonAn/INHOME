@@ -40,36 +40,36 @@ void Alc_SetTx(void)
     s16 PowerDiff =0;
     static u8 PreAlcAtt = 0;
 
-    if(iMyCtrl.TxAlc == ON){
-        if(iMySts.TxOutputPower > iMyCtrl.TxAlcHighLevel){
-            PowerDiff  = iMySts.TxOutputPower - iMyCtrl.TxAlcHighLevel;
+    if(iMySts.Flag1.Bit.TxAlc == ON){
+        if(iMySts.TxOutputPower > iMySts.TxAlcHighLevel){
+            PowerDiff  = iMySts.TxOutputPower - iMySts.TxAlcHighLevel;
             /* 0.1 dB 단위이므로 10 = 1.0 dB */
             if(PowerDiff  > 10){
-                iMyCtrl.TxAlcAtt++;
-                if(iMyCtrl.TxAlcAtt > TX_ALC_ATT_MAX_NUM) iMyCtrl.TxAlcAtt = TX_ALC_ATT_MAX_NUM;
+                iMySts.TxAlcAtt++;
+                if(iMySts.TxAlcAtt > TX_ALC_ATT_MAX_NUM) iMySts.TxAlcAtt = TX_ALC_ATT_MAX_NUM;
 
             }
 
-            if(PreAlcAtt != iMyCtrl.TxAlcAtt){
+            if(PreAlcAtt != iMySts.TxAlcAtt){
                 Atten_SetTxAtt();
-                AlcPrint("\r\n %d][ALC] Atten_SetTxAtt = %d", HAL_GetTick(), iMyCtrl.TxAlcAtt);
-                PreAlcAtt = iMyCtrl.TxAlcAtt;
+                AlcPrint("\r\n %d][ALC] Atten_SetTxAtt = %d", HAL_GetTick(), iMySts.TxAlcAtt);
+                PreAlcAtt = iMySts.TxAlcAtt;
             }
         }
-        else if(iMyCtrl.TxAlcLowOffset > iMySts.TxOutputPower){
-            PowerDiff  = iMySts.TxOutputPower - iMyCtrl.TxAlcLowOffset;
+        else if(iMySts.TxAlcLowOffset > iMySts.TxOutputPower){
+            PowerDiff  = iMySts.TxOutputPower - iMySts.TxAlcLowOffset;
 
             if(PowerDiff  < -10){
-                if(iMyCtrl.TxAlcAtt > TX_ALC_ATT_MIN_NUM){
-                    iMyCtrl.TxAlcAtt--;
+                if(iMySts.TxAlcAtt > TX_ALC_ATT_MIN_NUM){
+                    iMySts.TxAlcAtt--;
                 }
                 
             }
 
-            if(PreAlcAtt != iMyCtrl.TxAlcAtt){
+            if(PreAlcAtt != iMySts.TxAlcAtt){
                 Atten_SetTxAtt();
-                AlcPrint("\r\n %d][ALC] Atten_SetTxAtt = %d", HAL_GetTick(), iMyCtrl.TxAlcAtt);
-                PreAlcAtt = iMyCtrl.TxAlcAtt;
+                AlcPrint("\r\n %d][ALC] Atten_SetTxAtt = %d", HAL_GetTick(), iMySts.TxAlcAtt);
+                PreAlcAtt = iMySts.TxAlcAtt;
             }
         }
 
@@ -86,36 +86,36 @@ void Alc_SetRx(void)
     s16 PowerDiff =0;
     static u8 PreAlcAtt = 0;
 
-    if(iMyCtrl.RxAlc == ON){
-        if(iMySts.RxOutputPower > iMyCtrl.RxAlcHighLevel){
-            PowerDiff  = iMySts.RxOutputPower - iMyCtrl.RxAlcHighLevel;
+    if(iMySts.Flag1.Bit.RxAlc == ON){
+        if(iMySts.RxOutputPower > iMySts.RxAlcHighLevel){
+            PowerDiff  = iMySts.RxOutputPower - iMySts.RxAlcHighLevel;
 
             if(PowerDiff  > 10){
-                iMyCtrl.RxAlcAtt++;
-                if(iMyCtrl.RxAlcAtt > 40) iMyCtrl.RxAlcAtt = 40;
+                iMySts.RxAlcAtt++;
+                if(iMySts.RxAlcAtt > 40) iMySts.RxAlcAtt = 40;
 
             }
 
-            if(PreAlcAtt != iMyCtrl.RxAlcAtt){
+            if(PreAlcAtt != iMySts.RxAlcAtt){
                 Atten_SetRxAtt(RX_ATT1);
-                AlcPrint("\r\n %d][ALC] Atten_SetRxAtt = %d", HAL_GetTick(), iMyCtrl.RxAlcAtt);
-                PreAlcAtt = iMyCtrl.RxAlcAtt;
+                AlcPrint("\r\n %d][ALC] Atten_SetRxAtt = %d", HAL_GetTick(), iMySts.RxAlcAtt);
+                PreAlcAtt = iMySts.RxAlcAtt;
             }
         }
-        else if(iMyCtrl.TxAlcLowOffset > iMySts.RxOutputPower){
-            PowerDiff  = iMySts.RxOutputPower - iMyCtrl.TxAlcLowOffset;
+        else if(iMySts.TxAlcLowOffset > iMySts.RxOutputPower){
+            PowerDiff  = iMySts.RxOutputPower - iMySts.TxAlcLowOffset;
 
             if(PowerDiff  < -10){
-                if(iMyCtrl.RxAlcAtt > 0){
-                    iMyCtrl.RxAlcAtt--;
+                if(iMySts.RxAlcAtt > 0){
+                    iMySts.RxAlcAtt--;
                 }
                 
             }
 
-            if(PreAlcAtt != iMyCtrl.RxAlcAtt){
+            if(PreAlcAtt != iMySts.RxAlcAtt){
                 Atten_SetRxAtt(RX_ATT1);
-                AlcPrint("\r\n %d][ALC] Atten_SetRxAtt = %d", HAL_GetTick(), iMyCtrl.RxAlcAtt);
-                PreAlcAtt = iMyCtrl.RxAlcAtt;
+                AlcPrint("\r\n %d][ALC] Atten_SetRxAtt = %d", HAL_GetTick(), iMySts.RxAlcAtt);
+                PreAlcAtt = iMySts.RxAlcAtt;
             }
         }
 

@@ -111,7 +111,7 @@ typedef struct
     u8 TxMaxGain;
     u8 RxMaxGain;
 
-    u8 IsoLevel;
+    u8 IsoMeasure;
     u8 IsoMsg;
 
     u8 SystemRunTime[5];
@@ -176,8 +176,8 @@ typedef struct
     s8  RxAttBalanceTotal;              // 134
     s8  RxAttIsoTotal;                  // 135
     u8  UlRfSw;                   // 136
-    s8  IsoSet;              // 137
-    s8  OscSet;                    // 138
+    s8  IsoLimitLevel;              // 137
+    s8  OscLevelLimit;                    // 138
 
     s16 TxSdTime; // 139 ~ 140
     s16 RxSdTime; // 141 ~ 142
@@ -362,8 +362,8 @@ typedef struct
             u8 Reserved1 :1; /* 1 : 변경 */ 
             u8 RxAttIsoOffset :1; /* 2 : 변경 */ 
             u8 UlRfSw :1; /* 3 : 변경 */ 
-            u8 IsoSet :1; /* 4 : 변경 */ 
-            u8 OscSet :1; /* 5 : 변경 */ 
+            u8 IsoLimitLevel :1; /* 4 : 변경 */ 
+            u8 OscLevelLimit :1; /* 5 : 변경 */ 
             u8 TxSdTime :1; /* 6 : 변경 */ 
             u8 RxSdTime :1; /* 7 */ 
         } Bit; 
@@ -380,8 +380,8 @@ typedef struct
     u8 Reserved108[3];
     u8 RxAttIsoOffset;
     u8 UlRfSw;
-    s8 IsoSet;
-    s8 OscSet;
+    s8 IsoLimitLevel;
+    s8 OscLevelLimit;
     u16 TxSdTime;
     u16 RxSdTime;
 

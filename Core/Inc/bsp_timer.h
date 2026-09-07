@@ -12,6 +12,7 @@
 #define Time2Sec		2000L
 
 #define Time1Min		1000L*60L
+#define Time2Min		2000L*60L
 #define Time1Hour		(Time1Min*60L)
 #define Time1Day		(Time1Hour*24L)
 
@@ -41,7 +42,7 @@ enum
 	TimerShutdownCheck,	//10
 	/////////////////////////////////////
 	TimerISOCheck,
-	TimerALC_1_8G,
+	TimerISOTimeOut,
 	TimerALC_2_1G,
 	
 

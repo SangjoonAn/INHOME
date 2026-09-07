@@ -11,6 +11,7 @@
 #include "bsp_timer.h"
 #include "gui.h"
 #include "bsp_led.h"
+#include "Iso.h"
 
 #ifdef STM32F103
     #include "stm32f1xx.h"   // STM32F103
@@ -76,7 +77,8 @@ void Init_DataRestore(void)
 
     iMySts.RptMaker = MAKER_FRTEK;
     iMySts.McuSwVer = MU_FW_VER; 
-
+    iMySts.SubVersion = INITCHECKNUM; 
+    
     iMySts.Flag1.Bit.TxAlc          = iMyCtrl.TxAlc;
     iMySts.Flag1.Bit.RxAlc          = iMyCtrl.RxAlc;
     iMySts.Flag1.Bit.TxShutdown     = iMyCtrl.TxShutdown;
@@ -97,15 +99,46 @@ void Init_DataRestore(void)
 
     iMySts.TxGainAtt                = iMyCtrl.TxGainAtt;
     iMySts.RxGainAtt                = iMyCtrl.RxGainAtt;
-    iMySts.TxLinkBalanceAtt         = iMyCtrl.TxLinkBalanceAtt;
-    iMySts.RxLinkBalanceAtt         = iMyCtrl.RxLinkBalanceAtt;
+
     iMySts.IsoAtt                   = iMyCtrl.IsoAtt;
     iMySts.OscOnOff                 = iMyCtrl.OscOnOff;
 
+    iMySts.TxSubAtt                 = iMyCtrl.TxSubAtt;
+    iMySts.RxSubAtt                 = iMyCtrl.RxSubAtt;
+
+    iMySts.Test_TxAtt1              = iMyCtrl.Test_TxAtt1;
+    iMySts.Test_RxAtt1              = iMyCtrl.Test_RxAtt1;
+    iMySts.Test_RxAtt2              = iMyCtrl.Test_RxAtt2;
+
+    iMySts.SysFreq                  = iMyCtrl.SysFreq;
+    iMySts.IsoThreshold             = iMyCtrl.IsoThreshold;
+
+    iMySts.TxPowerOffsetInput       = iMyCtrl.TxPowerOffsetInput;
+    iMySts.TxPowerOffsetOutput      = iMyCtrl.TxPowerOffsetOutput;
+    iMySts.RxPowerOffsetInput       = iMyCtrl.RxPowerOffsetInput;
+    iMySts.RxPowerOffsetOutput      = iMyCtrl.RxPowerOffsetOutput;
+
+    iMySts.TemperatureComp          = iMyCtrl.TemperatureComp;
+    iMySts.TemperatureOffset        = iMyCtrl.TemperatureOffset;
+    iMySts.TxAttGainOffset          = iMyCtrl.TxAttGainOffset;
+
+    iMySts.IsoLimitLevel            = iMyCtrl.IsoLimitLevel;
+    iMySts.OscLevelLimit            = iMyCtrl.OscLevelLimit;
+    iMySts.TxSdTime                 = iMyCtrl.TxSdTime;
+    iMySts.RxSdTime                 = iMyCtrl.RxSdTime;
+
+    iMySts.TxAlcAtt                 = iMyCtrl.TxAlcAtt;
+    iMySts.RxAlcAtt                 = iMyCtrl.RxAlcAtt;
+    iMySts.OscOnOff                 = iMyCtrl.OscOnOff;
+
+
+    
+    
     DWT_Init();
     Table_Init();
     Alarm_Init();
     Alc_Init();
+    Iso_Init();
 
     if(iMyCtrl.InitCheckNum!=INITCHECKNUM){
         iMyCtrl.InitCheckNum=INITCHECKNUM;			SystemDataItemWrite(iMyCtrl.InitCheckNum);
@@ -117,11 +150,16 @@ void Init_DataRestore(void)
 
     }
 
+    // 1.8, 900MHz에 따라 Gain 설정
+    //if(iMySts.SysFreq  == SYS_FREQ_900MHZ){
+    //    iMySts.SysFreq = SYS_FREQ_900MHZ;
+    //}
+
+
     DebugPrint("\r\n %d][INIT] InitCheckNum = %x", HAL_GetTick(),iMyCtrl.InitCheckNum );
 
 
     
-
 }
 
 void Init_ResetCheck(void)
@@ -159,21 +197,25 @@ void Init_SwReset(void)
 void Init_TxAmpOn(void)
 {
 	HAL_GPIO_WritePin(TX_AMP_ONOFF_GPIO_Port, TX_AMP_ONOFF_Pin, ON);
+    iMySts.Flag2.Bit.TxPath = ON;
 }
 
 
 void Init_TxAmpOff(void)
 {
 	HAL_GPIO_WritePin(TX_AMP_ONOFF_GPIO_Port, TX_AMP_ONOFF_Pin, OFF);
+    iMySts.Flag2.Bit.TxPath = OFF;
 }
 
 void Init_RxAmpOn(void)
 {
 	HAL_GPIO_WritePin(RX_AMP_ONOFF_GPIO_Port, RX_AMP_ONOFF_Pin, ON);
+    iMySts.Flag2.Bit.RxPath = ON;
 }
 
 
 void Init_RxAmpOff(void)
 {
 	HAL_GPIO_WritePin(RX_AMP_ONOFF_GPIO_Port, RX_AMP_ONOFF_Pin, OFF);
+    iMySts.Flag2.Bit.RxPath = OFF;
 }

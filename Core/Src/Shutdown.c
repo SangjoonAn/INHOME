@@ -47,7 +47,7 @@ void Shutdown_TxCheck(void)
     static u16 RecheckCnt = 0;
     static u8  ShutdownDetectCnt = 0;
 
-    if(iMyCtrl.TxShutdown == ON){
+    if(iMySts.Flag1.Bit.TxShutdown == ON){
 
         if(TxShutdown_Status & SHUTDOWN_FOREVER_FLAG){
             return;
@@ -64,7 +64,7 @@ void Shutdown_TxCheck(void)
 
             }
         }
-        else if(iMySts.TxOutputPower > iMyCtrl.TxShutdownLimit){
+        else if(iMySts.TxOutputPower > iMySts.TxShutdownLimit){
             
             if(++ShutdownDetectCnt  >= ShutdownCheckTime[step]){
                 LED_TX_SHUTDOWN_ON;

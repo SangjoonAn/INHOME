@@ -25,14 +25,12 @@ void Gui_Init(void)
 
     memset(pGuiProtoDev1, 0, sizeof(GUI_DEV_t));
 
-    pGuiProtoDev1->Uart        = &uart1_device;
-    pGuiProtoDev1->pMsgBuffer  = Gui_RxMsgBuffer;
-    pGuiProtoDev1->RecvState   = GUI_PROTO_STATE_SYNC;
-    pGuiProtoDev1->MsgBuffSize = UART1_FRAME_BUF_SIZE; 
+    pGuiProtoDev1->Uart = &uart1_device;
+    pGuiProtoDev1->pMsgBuffer = Gui_RxMsgBuffer;
+    pGuiProtoDev1->RecvState = GUI_PROTO_STATE_SYNC;
+    pGuiProtoDev1->MsgBuffSize = UART1_FRAME_BUF_SIZE;
     pGuiProtoDev1->LastRecvTick = HAL_GetTick();
-
 }
-
 
 static void Gui_RecvMessage(GUI_DEV_t *pDev)
 {
@@ -450,17 +448,17 @@ void Gui_SendControlMessage(u8 *pRxMsg)
             iMySts.RxAttIsoOffset = iMyCtrl.RxAttIsoOffset;
             DebugPrint("\r\n %d][GUI] RxAttIsoOffset set to %d", HAL_GetTick(), iMyCtrl.RxAttIsoOffset);
         }
-        if(pCtrl->Flag6.Bit.IsoSet){
-            iMyCtrl.IsoSet = pCtrl->IsoSet;
-            SystemDataItemWrite(iMyCtrl.IsoSet);
-            iMySts.IsoSet = iMyCtrl.IsoSet;
-            DebugPrint("\r\n %d][GUI] IsoSet set to %d", HAL_GetTick(), iMyCtrl.IsoSet);
+        if(pCtrl->Flag6.Bit.IsoLimitLevel){
+            iMyCtrl.IsoLimitLevel = pCtrl->IsoLimitLevel;
+            SystemDataItemWrite(iMyCtrl.IsoLimitLevel);
+            iMySts.IsoLimitLevel = iMyCtrl.IsoLimitLevel;
+            DebugPrint("\r\n %d][GUI] IsoLimitLevel set to %d", HAL_GetTick(), iMyCtrl.IsoLimitLevel);
         }
-        if(pCtrl->Flag6.Bit.OscSet){
-            iMyCtrl.OscSet = pCtrl->OscSet;
-            SystemDataItemWrite(iMyCtrl.OscSet);
-            iMySts.OscSet = iMyCtrl.OscSet;
-            DebugPrint("\r\n %d][GUI] OscSet set to %d", HAL_GetTick(), iMyCtrl.OscSet);
+        if(pCtrl->Flag6.Bit.OscLevelLimit){
+            iMyCtrl.OscLevelLimit = pCtrl->OscLevelLimit;
+            SystemDataItemWrite(iMyCtrl.OscLevelLimit);
+            iMySts.OscLevelLimit = iMyCtrl.OscLevelLimit;
+            DebugPrint("\r\n %d][GUI] OscLevelLimit set to %d", HAL_GetTick(), iMyCtrl.OscLevelLimit);
         }
         if(pCtrl->Flag6.Bit.TxSdTime){
             iMyCtrl.TxSdTime = pCtrl->TxSdTime;
@@ -943,7 +941,7 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
 
     pBuf[index++] = pState->TxMaxGain;
     pBuf[index++] = pState->RxMaxGain;
-    pBuf[index++] = pState->IsoLevel;
+    pBuf[index++] = pState->IsoMeasure;
     pBuf[index++] = pState->IsoMsg;
 
     pBuf[index++] = pState->SystemRunTime[0];
@@ -1027,8 +1025,8 @@ u16 SerializeMyState(u8 *pBuf, const MY_STATE_t *pState)
 
     pBuf[index++] = pState->UlRfSw;
 
-    pBuf[index++] = (u8)pState->IsoSet;
-    pBuf[index++] = (u8)pState->OscSet;
+    pBuf[index++] = (u8)pState->IsoLimitLevel;
+    pBuf[index++] = (u8)pState->OscLevelLimit;
 
     PutU16BE(&pBuf[index], (u16)pState->TxSdTime); index += 2;
     PutU16BE(&pBuf[index], (u16)pState->RxSdTime); index += 2;

@@ -299,7 +299,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f2xx_hal.h"
-#include "bsp_uart.h"
+
 /** @addtogroup STM32F2xx_HAL_Driver
   * @{
   */
@@ -2542,12 +2542,6 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress
     /* Send Slave Address and Memory Address */
     if (I2C_RequestMemoryWrite(hi2c, DevAddress, MemAddress, MemAddSize, Timeout, tickstart) != HAL_OK)
     {
-      DebugPrint("\r\n%d][I2C] RequestMemoryWrite FAIL "
-               "Dev=0x%02X Mem=0x%04X Error=0x%08lX",
-               HAL_GetTick(),
-               DevAddress,
-               MemAddress,
-               (unsigned long)hi2c->ErrorCode);
       return HAL_ERROR;
     }
 

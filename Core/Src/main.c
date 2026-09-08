@@ -33,6 +33,7 @@
 #include "gui.h"
 #include "Alarm.h"
 #include "Alc.h"
+#include "iso.h"
 #include "bsp_debug.h"
 /* USER CODE END Includes */
 
@@ -138,6 +139,7 @@ int main(void)
     Adc_Task();
     Gui_Task();
     Alc_Task();
+    Iso_Task();
 
     Debug_Task();
 

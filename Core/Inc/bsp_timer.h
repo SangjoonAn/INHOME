@@ -10,6 +10,7 @@
 #define Time500mSec		500
 #define Time1Sec		1000L
 #define Time2Sec		2000L
+#define Time5Sec		5000L
 
 #define Time1Min		1000L*60L
 #define Time2Min		2000L*60L
@@ -131,6 +132,7 @@ void Timer_Task(void);
 u8 bsp_timer_set(u8 TimeId, u32 TimeCnt);
 u8 bsp_timer_TimeOverCheck( u8 TimeId );
 u32 bsp_timer_RemainCheck(u8 TimeId);
+u8 bsp_timer_Cancel ( u8 TimeId );
 void System_GetTime(u8 *pTime);
 
 #endif /* BSP_TIMER_H */

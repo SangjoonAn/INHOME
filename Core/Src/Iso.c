@@ -9,11 +9,14 @@
 #include "bsp_timer.h"
 #include "atten.h"
 #include "bsp_init.h"
+#include "bsp_timer.h"
+#include "bsp_uart.h"
 
 #define IsoPrint(...) do { if (IsoFlag) DebugPrint(__VA_ARGS__); } while (0)
 
 u8 IsoFlag = 0;
-u8 IsoPwrInitFlag;
+u8 IsoPwrInitFlag = ON;
+//u8 IsoPwrInitFlag = OFF;
 
 static ISO_STATEe IsoState = ISO_STATE_IDLE;
 
@@ -38,16 +41,21 @@ void Iso_Check(void)
 {
   if(IsoPwrInitFlag == ON || iMySts.Flag2.Bit.IsoReCheck == ON){
 
-    if(bsp_timer_TimeOverCheck(TimerISOTimeOut) && IsoState != ISO_STATE_IDLE){
-      IsoState = ISO_STATE_FAIL;
+    if(IsoState != ISO_STATE_IDLE){
+      if(bsp_timer_TimeOverCheck(TimerISOTimeOut)) {
+        IsoState = ISO_STATE_FAIL;
+        IsoPrint("\r\n %d][ISO] TimerISOTimeOut ", HAL_GetTick());
+      }
     }
 
     switch(IsoState)
     {
       case ISO_STATE_IDLE:
         bsp_timer_set(TimerISOTimeOut, Time2Min);
+        //bsp_timer_set(TimerISOTimeOut, Time5Sec);
         IsoState = ISO_STATE_UE_CHECK;
         iMySts.IsoMsg = ISO_MSG_CHECK;
+        IsoPrint("\r\n %d][ISO] ISO_STATE_IDLE ", HAL_GetTick());
         break;
 
       case ISO_STATE_UE_CHECK:
@@ -58,6 +66,7 @@ void Iso_Check(void)
           Atten_SetRxAtt(RX_ATT2);
           IsoState = ISO_STATE_CHECK;
           iMySts.IsoMsg = ISO_MSG_CHECK;
+          IsoPrint("\r\n %d][ISO] ISO_STATE_UE_CHECK ", HAL_GetTick());
         }
         break;
 
@@ -65,21 +74,26 @@ void Iso_Check(void)
         if(iMySts.RxOutputPower >= iMySts.IsoLimitLevel){
             if(iMySts.IsoAtt > 15){
               IsoState = ISO_STATE_FAIL;
+              IsoPrint("\r\n %d][ISO] ISO_STATE_FAIL ", HAL_GetTick());
             }
             else if(iMySts.IsoAtt > 2){
               IsoState = ISO_STATE_LIMIT;
+              IsoPrint("\r\n %d][ISO] ISO_STATE_LIMIT ", HAL_GetTick());
             }
             else{
-              IsoState = ISO_STATE_FAIL;              
+              IsoState = ISO_STATE_FAIL;
+              IsoPrint("\r\n %d][ISO] ISO_STATE_FAIL ", HAL_GetTick());
             }
           }
         else{
           if(iMySts.IsoAtt == 0){
             IsoState = ISO_STATE_OK;
+            IsoPrint("\r\n %d][ISO] ISO_STATE_OK ", HAL_GetTick());
           }
           else{
             iMySts.IsoAtt--;
             Atten_SetRxAtt(RX_ATT2);
+            IsoPrint("\r\n %d][ISO] IsoAtt %ddB ", HAL_GetTick(), iMySts.IsoAtt);
           }
           
         }
@@ -121,7 +135,7 @@ void Iso_Check(void)
         IsoPwrInitFlag = OFF;
         iMySts.Flag2.Bit.IsoReCheck = OFF;
         iMySts.IsoMsg = ISO_MSG_FAIL;
-        
+
         bsp_timer_Cancel(TimerISOTimeOut);
         break;
 

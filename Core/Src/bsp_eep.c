@@ -344,11 +344,11 @@ EEPROM_Status_t Eep_Init(void)
     if (status == EEPROM_OK)
     {
         DebugPrint("\r\n%d][EEPROM] Device Ready (Addr=0x%02X, Page=%d)",HAL_GetTick() , EEPROM_ADDRESS, I2C_PageSize);
-        return EEPROM_OK;
     }
- 
-    DebugPrint("\r\n%d][EEPROM] Device not ready, trying Bus Recovery",HAL_GetTick() );
- 
+    else{
+        DebugPrint("\r\n%d][EEPROM] Device not ready, trying Bus Recovery",HAL_GetTick() );
+    }
+  
     /*
      * EEPROM did not respond. Try I2C bus recovery.
      */
@@ -356,9 +356,11 @@ EEPROM_Status_t Eep_Init(void)
  
     if (status != EEPROM_OK)
     {
-        DebugPrint("\r\n%d][EEPROM] Bus Recovery failed",HAL_GetTick() );
- 
+        DebugPrint("\r\n%d][EEPROM] Bus I2C_BusReset failed",HAL_GetTick() );
         return status;
+    }
+    else{
+        DebugPrint("\r\n%d][EEPROM] Bus I2C_BusReset OK",HAL_GetTick() );
     }
  
     /*
@@ -368,11 +370,11 @@ EEPROM_Status_t Eep_Init(void)
  
     if (status == EEPROM_OK)
     {
-        DebugPrint("\r\n%d][EEPROM] Init OK after Recovery",HAL_GetTick() );
+        DebugPrint("\r\n%d][EEPROM] Device Ready after I2C_BusReset(Addr=0x%02X, Page=%d)",HAL_GetTick() , EEPROM_ADDRESS, I2C_PageSize);
     }
     else
     {
-        DebugPrint("\r\n%d][EEPROM] Device not responding after Recovery",HAL_GetTick() );
+        DebugPrint("\r\n%d][EEPROM] Device not responding after I2C_BusReset",HAL_GetTick() );
     }
  
     return status;
@@ -389,41 +391,31 @@ EEPROM_Status_t Eep_Init(void)
  
 EEPROM_Status_t I2C_EE_WaitEepromStandbyState(void)
 {
-    uint32_t tickstart;
+    uint32_t tickstart = HAL_GetTick();
     HAL_StatusTypeDef status;
- 
-    tickstart = HAL_GetTick();
- 
+
     while (1)
     {
+        /* 이전 트랜잭션의 에러 상태가 남아있지 않도록 매 시도 전 클리어 */
+        __HAL_I2C_CLEAR_FLAG(&EEPROM_I2C_HANDLE, I2C_FLAG_AF);
+        EEPROM_I2C_HANDLE.ErrorCode = HAL_I2C_ERROR_NONE;
+        EEPROM_I2C_HANDLE.State = HAL_I2C_STATE_READY;   /* 필요시 */
+
         status = HAL_I2C_IsDeviceReady( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, 1U, EEPROM_I2C_TIMEOUT);
- 
+
         if (status == HAL_OK)
         {
-            /*
-             * EEPROM internal write cycle completed.
-             */
             return EEPROM_OK;
         }
- 
-        /*
-         * Maximum write-cycle timeout.
-         */
+
         if ((HAL_GetTick() - tickstart) >= EEPROM_WRITE_TIMEOUT)
         {
-            DebugPrint("\r\n%d][EEPROM] Standby wait timeout",HAL_GetTick() );
- 
             return EEPROM_TIMEOUT;
         }
- 
-        /*
-         * Small delay. No RTOS is used, so this is a plain
-         * busy-wait with HAL_Delay().
-         */
+
         HAL_Delay(EEPROM_POLL_DELAY);
     }
-}
- 
+} 
  
 /* ============================================================
  * Page Write
@@ -467,11 +459,24 @@ EEPROM_Status_t I2C_EE_PageWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16_t
         return EEPROM_ERROR;
     }
  
+    status = HAL_I2C_IsDeviceReady(&EEPROM_I2C_HANDLE,
+                                EEPROM_ADDRESS,
+                                3,
+                                100);
+
+    DebugPrint("\r\n%d][I2C] IsDeviceReady "
+            "Dev=0x%02X status=%d err=0x%08lX",
+            HAL_GetTick(),
+            EEPROM_ADDRESS,
+            status,
+            (unsigned long)HAL_I2C_GetError(&EEPROM_I2C_HANDLE));
+
     /*
      * Perform one page write.
      */
     status = HAL_I2C_Mem_Write( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, WriteAddr, EEPROM_MEMADD_SIZE, pBuffer, NumByteToWrite, EEPROM_I2C_TIMEOUT);
  
+
     if (status == HAL_OK)
     {
         /*
@@ -511,6 +516,50 @@ EEPROM_Status_t I2C_EE_PageWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16_t
  
             DebugPrint("\r\n%d][I2C] PageWrite retry failed @0x%04X, HAL=%d, ERR=0x%08lX",HAL_GetTick() , WriteAddr, status, (unsigned long)error);
         }
+    }
+    else if (error & HAL_I2C_ERROR_AF)
+    {
+        DebugPrint("\r\n%d][I2C] PageWrite AF @0x%04X, resetting HAL state", HAL_GetTick(), WriteAddr);
+
+        /* HAL_I2C_Mem_Write가 에러 경로에서 State/Lock을 복구하지 않는 결함 보정 */
+        EEPROM_I2C_HANDLE.State = HAL_I2C_STATE_READY;
+        EEPROM_I2C_HANDLE.Mode  = HAL_I2C_MODE_NONE;
+        __HAL_UNLOCK(&EEPROM_I2C_HANDLE);
+
+        if (I2C_EE_WaitEepromStandbyState() == EEPROM_OK)
+        {
+            status = HAL_I2C_Mem_Write( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, WriteAddr,
+                                        EEPROM_MEMADD_SIZE, pBuffer, NumByteToWrite, EEPROM_I2C_TIMEOUT);
+            if (status == HAL_OK)
+            {
+                return I2C_EE_WaitEepromStandbyState();
+            }
+
+            /* 재시도에서도 AF로 실패했다면 다시 State/Lock을 복구해야 함 */
+            if (HAL_I2C_GetError(&EEPROM_I2C_HANDLE) & HAL_I2C_ERROR_AF)
+            {
+                EEPROM_I2C_HANDLE.State = HAL_I2C_STATE_READY;
+                EEPROM_I2C_HANDLE.Mode  = HAL_I2C_MODE_NONE;
+                __HAL_UNLOCK(&EEPROM_I2C_HANDLE);
+            }
+        }
+        else
+        {
+            DebugPrint("\r\n%d][I2C] PageWrite standby timeout @0x%04X, escalating to BusReset", HAL_GetTick(), WriteAddr);
+            if (I2C_BusReset() == EEPROM_OK)
+            {
+                status = HAL_I2C_Mem_Write( &EEPROM_I2C_HANDLE, EEPROM_ADDRESS, WriteAddr,
+                                            EEPROM_MEMADD_SIZE, pBuffer, NumByteToWrite, EEPROM_I2C_TIMEOUT);
+                if (status == HAL_OK)
+                {
+                    return I2C_EE_WaitEepromStandbyState();
+                }
+            }
+        }
+
+        error = HAL_I2C_GetError(&EEPROM_I2C_HANDLE);
+        DebugPrint("\r\n%d][I2C] PageWrite AF-retry failed @0x%04X, HAL=%d, ERR=0x%08lX",
+                HAL_GetTick(), WriteAddr, status, (unsigned long)error);
     }
  
     return EEPROM_HalStatusToStatus(status);

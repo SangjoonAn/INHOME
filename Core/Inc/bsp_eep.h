@@ -26,7 +26,7 @@
 #define I2C_PageSize                   128U
  
 /* I2C transaction timeout (ms) */
-#define EEPROM_I2C_TIMEOUT             100U
+#define EEPROM_I2C_TIMEOUT             200U
  
 /* Maximum time to wait for EEPROM internal write cycle (ms) */
 #define EEPROM_WRITE_TIMEOUT           1000U

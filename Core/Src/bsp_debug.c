@@ -7,6 +7,8 @@
 
 #include "bsp_debug.h"
 #include "bsp_uart.h"
+#include "Alc.h"
+#include <stdlib.h>
 
 typedef struct
 {
@@ -15,8 +17,9 @@ typedef struct
 } COMMAND_LIST_t;
 
 COMMAND_LIST_t  help_cmd_list[] = {
-{"help",   CMD_ShowHelpList },
-{"?",      CMD_ShowHelpList },
+{"help",    CMD_ShowHelpList },
+{"?",       CMD_ShowHelpList },
+{"alc",     AlcCmd },
 {NULL,   NULL}
 };
 
@@ -40,12 +43,67 @@ void Debug_Task(void)
 void CMD_ShowHelpList(int argc, char *argv[])
 {
 	DebugPrint("\r\n help or ? : Show this help message");			
-	DebugPrint("\r\n dtu [dls|uls|dlm|ulm] [att] [value]");			
-	DebugPrint("\r\n du [dls|uls|dlm|ulm] [att] [value]");			
-	DebugPrint("\r\n su [dls|uls|dlm|ulm] [det] ");		
+	DebugPrint("\r\n ---------------------");			
+	DebugPrint("\r\n alc debug [on/off]");			
+    DebugPrint("\r\n alc [rx/tx] [on/off]");			
+	DebugPrint("\r\n alc [rx/tx] att [value]");			
+	DebugPrint("\r\n alc [rx/tx] high [value]");			
+	DebugPrint("\r\n alc [rx/tx] low [value]");		
+    DebugPrint("\r\n ---------------------");				
 	
 }
 
+void AlcCmd(int argc, char *argv[])
+{
+    if (argc < 3){
+        DebugPrint("\r\n alc cmd argc < 3");
+        return;		
+    }
+
+    if(strcmp(argv[1], "debug") == 0){
+        if (strcmp(argv[2], "on") == 0){
+            Alc_SetDebugFlag();
+        }
+        else{
+            Alc_ClearDebugFlag();
+        }
+    }
+    else if(strcmp(argv[1], "rx") == 0){
+        if (strcmp(argv[2], "on") == 0){
+            Alc_SetRxAlc();
+        }
+        else if (strcmp(argv[2], "off") == 0){
+            Alc_ClearRxAlc();
+        }
+        else if (strcmp(argv[2], "att") == 0){
+            if(argc < 4){
+                DebugPrint("\r\n alc cmd argc < 4");
+            }
+            else{
+                Alc_SetRxAlcAtt(atoi(argv[3]));
+            }            
+        }
+        else if (strcmp(argv[2], "high") == 0){
+            if(argc < 4){
+                DebugPrint("\r\n alc cmd argc < 4");
+            }
+            else{
+                Alc_SetRxAlcHighLevel(atoi(argv[3]));
+            }    
+        }
+        else if (strcmp(argv[2], "low") == 0){
+            if(argc < 4){
+                DebugPrint("\r\n alc cmd argc < 4");
+            }
+            else{
+                Alc_SetRxAlcLowLevel(atoi(argv[3]));
+            }    
+        }
+
+    }
+    else if(strcmp(argv[1], "tx") == 0){
+    }
+}
 
 u8 UsrCmdExc(int argc, char *argv[])
 {

@@ -7,6 +7,8 @@
 
 #ifndef INC_ALC_H_
 #define INC_ALC_H_
+#include "common.h"
+
 
 #define RX_ALC_ATT_MIN_NUM     0
 #define RX_ALC_ATT_MAX_NUM     40
@@ -19,4 +21,11 @@ void Alc_Task(void);
 void Alc_SetTx(void);
 void Alc_SetRx(void);
 
+void Alc_SetDebugFlag (void);
+void Alc_ClearDebugFlag (void);
+void Alc_ClearRxAlc (void);
+void Alc_SetRxAlc (void);
+void Alc_SetRxAlcAtt(u8 att);
+void Alc_SetRxAlcHighLevel(s8 val);
+void Alc_SetRxAlcLowLevel(s8 val);
 #endif /* INC_ALC_H_ */

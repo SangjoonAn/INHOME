@@ -128,7 +128,7 @@ void Atten_SetRxAtt(u8 TargetAtten, u8 val)
     Atten_SendProc(bTemp, TargetAtten);
 }
 
-// RX_ATT1, 호출불, att 값
+// RX_ATT1, 호출, att 값
 void Atten_TestAtt(u8 TargetAtten, s8 TestAtt)
 {
     u8 bTemp;
@@ -172,17 +172,11 @@ void Atten_SendProc(u8 SerialData8Bit, u8 TargetAtten)
 
     Atten_ClockOnOff(0);
 
-    HAL_GPIO_WritePin(
-        AttEnGpio[TargetAtten].Port,
-        AttEnGpio[TargetAtten].Pin,
-        ON);
+    HAL_GPIO_WritePin(AttEnGpio[TargetAtten].Port, AttEnGpio[TargetAtten].Pin, ON);
 
     Atten_ClockDelay();
 
-    HAL_GPIO_WritePin(
-        AttEnGpio[TargetAtten].Port,
-        AttEnGpio[TargetAtten].Pin,
-        OFF);
+    HAL_GPIO_WritePin(AttEnGpio[TargetAtten].Port, AttEnGpio[TargetAtten].Pin, OFF);
 
     Atten_ClockDelay();
 }

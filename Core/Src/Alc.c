@@ -11,6 +11,7 @@
 #include "bsp_uart.h"
 #include "bsp_timer.h"
 
+
 #define AlcPrint(...) do { if (AlcFlag) DebugPrint(__VA_ARGS__); } while (0)
 
 u8 AlcFlag = 0;
@@ -45,7 +46,7 @@ void Alc_SetTx(void)
             PowerDiff  = iMySts.TxOutputPower - iMySts.TxAlcHighLevel;
             /* 0.1 dB 단위이므로 10 = 1.0 dB */
             if(PowerDiff  > 10){
-                iMySts.TxAlcAtt++;
+                iMySts.TxAlcAtt += 2;
                 if(iMySts.TxAlcAtt > TX_ALC_ATT_MAX_NUM) iMySts.TxAlcAtt = TX_ALC_ATT_MAX_NUM;
 
             }
@@ -61,7 +62,8 @@ void Alc_SetTx(void)
 
             if(PowerDiff  < -10){
                 if(iMySts.TxAlcAtt > TX_ALC_ATT_MIN_NUM){
-                    iMySts.TxAlcAtt--;
+                    if(iMySts.TxAlcAtt < 2) iMySts.TxAlcAtt = 0;
+                    else iMySts.TxAlcAtt -= 2;
                 }
                 
             }
@@ -91,7 +93,7 @@ void Alc_SetRx(void)
             PowerDiff  = iMySts.RxOutputPower - iMySts.RxAlcHighLevel;
 
             if(PowerDiff  > 10){
-                iMySts.RxAlcAtt++;
+                iMySts.RxAlcAtt += 2;
                 if(iMySts.RxAlcAtt > 40) iMySts.RxAlcAtt = 40;
 
             }
@@ -107,7 +109,8 @@ void Alc_SetRx(void)
 
             if(PowerDiff  < -10){
                 if(iMySts.RxAlcAtt > 0){
-                    iMySts.RxAlcAtt--;
+                    if(iMySts.RxAlcAtt < 2) iMySts.RxAlcAtt = 0;
+                    else iMySts.RxAlcAtt -= 2;
                 }
                 
             }
@@ -124,4 +127,40 @@ void Alc_SetRx(void)
     }
 
 
+}
+
+void Alc_SetDebugFlag (void)
+{
+    AlcFlag = ON;
+}
+
+void Alc_ClearDebugFlag (void)
+{
+    AlcFlag = OFF;
+}
+
+
+void Alc_ClearRxAlc (void)
+{
+    iMySts.Flag1.Bit.RxAlc = OFF;
+}
+
+void Alc_SetRxAlc (void)
+{
+    iMySts.Flag1.Bit.RxAlc = ON;
+}
+
+void Alc_SetRxAlcAtt(u8 att)
+{
+    Atten_SetRxAtt(RX_ATT1, att);
+}
+
+void Alc_SetRxAlcHighLevel(s8 val)
+{
+    iMySts.RxAlcHighLevel = val;
+}
+
+void Alc_SetRxAlcLowLevel(s8 val)
+{
+    iMySts.RxAlcLowOffset = val;
 }

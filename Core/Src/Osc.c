@@ -45,35 +45,37 @@ void Osc_Check(void)
 {
     static u8 PreRxAlc = OFF;
 
+    if(Iso_GetPwrInitFlag() == ON) return;
+    if(Iso_GetIsoReCheckFlag() == ON) return;
 
-    if(iMySts.Flag2.Bit.RxPath == ON && Iso_GetIsoReCheckFlag() == OFF){
+    //Amp 설정이 On 인 경우에만 실행
+    if(iMyCtrl.RxPath == ON && iMySts.Alarm.Bit.OscAlarm == OFF){
         switch(OscState)
         {
             case OSC_STATE_IDLE:
                 OscCount = 0;
-                PreRxAlc = iMySts.Flag1.Bit.RxAlc;
                 OscState = OSC_STATE_CHECK;
-                iMySts.Alarm.Bit.OscAlarm = ON;
-                iMySts.Stability = 0;
+                PreRxAlc = RX_ALC_BIT;
                 //Alarm 설정후 Iso진행시 Alarm 언제 꺼저야 되는지 확인 필요
                 break;
             case OSC_STATE_CHECK:
                 if(iMySts.RxOutputPower >= iMySts.IsoLimitLevel){
-                    iMySts.Flag1.Bit.RxAlc = OFF;
+                    RX_ALC_BIT = OFF;
                     Init_RxAmpOff();
                     OscPrint("\r\n %d][OSC] STATE_CHECK -> STATE_FEEDBACK_CHECK", HAL_GetTick());
                     OscState = OSC_STATE_FEEDBACK_CHECK;
                 }
                 else{
-                    OscPrint("\r\n %d][OSC] STATE_CHECK -> STATE_RECOVERY", HAL_GetTick());
-                    OscState = OSC_STATE_RECOVERY;
+                    Osc_ClearStatusBit();
+                    iMySts.Stability = 0;
+                    RX_ALC_BIT = PreRxAlc;
                 }
                 break;
 
             case OSC_STATE_FEEDBACK_CHECK:
                 if(iMySts.RxOutputPower >= iMySts.IsoLimitLevel){
                     OscState = OSC_STATE_RECHECK;
-                    OscPrint("\r\n %d][OSC] TATE_FEEDBACK_CHECK -> TATE_RECHECK", HAL_GetTick());
+                    OscPrint("\r\n %d][OSC] STATE_FEEDBACK_CHECK -> STATE_RECHECK", HAL_GetTick());
                 }
                 else{
                     OscState = OSC_STATE_RECOVERY;
@@ -82,22 +84,21 @@ void Osc_Check(void)
                 break;
 
             case OSC_STATE_RECOVERY:
-                OscCount = 0;
-                iMySts.Flag1.Bit.RxAlc = PreRxAlc;
+                RX_ALC_BIT = PreRxAlc;
                 Init_RxAmpOn();
                 OscState = OSC_STATE_IDLE;
                 OscPrint("\r\n %d][OSC] STATE_RECOVERY -> STATE_IDLE", HAL_GetTick());
-
                 break;
 
             case OSC_STATE_RECHECK:
                 if(OscCount >= OSC_MAX_COUNT){
                     OscState = OSC_STATE_IDLE;
-                    iMySts.Alarm.Bit.OscAlarm = ON;
+                    Osc_SetStatusBit();
                     iMySts.Stability = 1;
-                    Alarm_Set(ALARM_CODE_OSC);
+                    RX_ALC_BIT = PreRxAlc;
+                    Alarm_Set(ALARM_BIT_OSC);
                     Iso_SetIsoReCheckFlag(ON);
-                    OscPrint("\r\n %d][OSC] STATE_RECHECK -> STATE_IDLE", HAL_GetTick());
+                    OscPrint("\r\n %d][OSC] STATE_RECHECK -> OSC_STATE_IDLE", HAL_GetTick());
                 }
                 else{
                     OscCount++;
@@ -112,8 +113,20 @@ void Osc_Check(void)
                 break;
         }
 
-
     }
 
 
+}
+
+void Osc_SetStatusBit(void)
+{
+    iMySts.Alarm.Bit.OscAlarm = ON;
+}
+void Osc_ClearStatusBit(void)
+{
+    iMySts.Alarm.Bit.OscAlarm = OFF;
+}
+u8 Osc_GetStatusBit(void)
+{
+    return iMySts.Alarm.Bit.OscAlarm;
 }

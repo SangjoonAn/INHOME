@@ -13,6 +13,7 @@
 #include "bsp_led.h"
 #include "Iso.h"
 #include "Osc.h"
+#include "Shutdown.h"
 
 #ifdef STM32F103
     #include "stm32f1xx.h"   // STM32F103
@@ -21,6 +22,8 @@
 #ifdef STM32F205
     #include "stm32f2xx.h"   // STM32F205
 #endif
+
+
 
 void bsp_Init(void)
 {
@@ -73,8 +76,19 @@ void Init_DataRestore(void)
     DebugPrint("\r\n %d][INIT] Init_DataRestore", HAL_GetTick());
     memset(&iMySts, 0, sizeof(iMySts)); 
 
-
     I2C_EE_BufferRead((u8 *)&iMyCtrl, (u16)ExtE2pMapSYSTEMSAVEVAR, sizeof(iMyCtrl));
+
+    
+    if(iMyCtrl.InitCheckNum!=INITCHECKNUM){
+        iMyCtrl.InitCheckNum=INITCHECKNUM;			SystemDataItemWrite(iMyCtrl.InitCheckNum);
+        DebugPrint("\r\n %d][INIT] Factory Set", HAL_GetTick());
+        Init_SetFactory();
+        
+        if(Alarm_LogClear() == FALSE){
+            DebugPrint("\r\n %d][INIT][ERR] Alarm_LogClear ERR", HAL_GetTick());
+        }
+
+    }
 
     iMySts.RptMaker = MAKER_FRTEK;
     iMySts.McuSwVer = MU_FW_VER; 
@@ -132,26 +146,6 @@ void Init_DataRestore(void)
     iMySts.RxAlcAtt                 = iMyCtrl.RxAlcAtt;
     iMySts.OscOnOff                 = iMyCtrl.OscOnOff;
 
-
-    
-    
-    DWT_Init();
-    Table_Init();
-    Alarm_Init();
-    Alc_Init();
-    Iso_Init();
-    Osc_Init();
-
-    if(iMyCtrl.InitCheckNum!=INITCHECKNUM){
-        iMyCtrl.InitCheckNum=INITCHECKNUM;			SystemDataItemWrite(iMyCtrl.InitCheckNum);
-        DebugPrint("\r\n %d][INIT] Factory Set", HAL_GetTick());
-        Table_SetFactory();
-        if(Alarm_LogClear() == FALSE){
-            DebugPrint("\r\n %d][INIT][ERR] Alarm_LogClear ERR", HAL_GetTick());
-        }
-
-    }
-
     if(iMySts.SysFreq  == SYS_FREQ_900M){
         iMySts.TxMaxGain = TX_900M_MAX_GAIN;
         iMySts.RxMaxGain = RX_900M_MAX_GAIN;
@@ -161,12 +155,27 @@ void Init_DataRestore(void)
         iMySts.RxMaxGain = RX_18G_MAX_GAIN;
     }
     
-
+    DWT_Init();
+    Table_Init();
+    Alarm_Init();
+    Alc_Init();
+    Iso_Init();
+    Osc_Init();
+    Shutdown_Init();
 
     DebugPrint("\r\n %d][INIT] InitCheckNum = %x", HAL_GetTick(),iMyCtrl.InitCheckNum );
 
 
     
+}
+
+
+void Init_SetFactory(void)
+{
+    Table_SetFactory();
+
+    // 공장 초기값 설정할것.
+
 }
 
 void Init_ResetCheck(void)

@@ -16,6 +16,8 @@
 #define TX_SHUTDOWN_FLAG			0x04
 #define RX_SHUTDOWN_FLAG			0x08
 
+void Shutdown_Init(void);
+void Shutdown_Task(void);
 void Shutdown_TxCheck(void);
 void Shutdown_RxCheck(void);
 void Shutdown_TxClear(void);

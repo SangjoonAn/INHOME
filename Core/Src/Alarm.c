@@ -106,10 +106,6 @@ void Alarm_Save(void)
 
         if (gAlarm.Status & ALARM_BIT_FWD_SD)
         {
-            if(gAlarm.FwdSDState == FWD_SD_RECOVERY){
-                DebugPrint("\r\n %d][ALARM] Alarm_Save FWD_SD_RECOVERY ", HAL_GetTick());
-                return;
-            }
             gAlarm.FwdSDCount++;
             Alarm_CountSave(ALARM_COUNT_INDEX_FWD_SD);
             Alarm_LogSave(Alarm_GetCode(ALARM_BIT_FWD_SD));
@@ -117,10 +113,6 @@ void Alarm_Save(void)
 
         if (gAlarm.Status & ALARM_BIT_REV_SD)
         {
-            if(gAlarm.RevSDState == REV_SD_RECOVERY){
-                DebugPrint("\r\n %d][ALARM] Alarm_Save FWD_SD_RECOVERY ", HAL_GetTick());
-                return;
-            }
             gAlarm.RevSDCount++;
             Alarm_CountSave(ALARM_COUNT_INDEX_REV_SD);
             Alarm_LogSave(Alarm_GetCode(ALARM_BIT_REV_SD));
@@ -279,6 +271,11 @@ void Alarm_Set(u16 AlarmBit)
     gAlarm.Status |= AlarmBit;
 }
 
+u16 Alarm_Get(u16 AlarmBit)
+{
+    return gAlarm.Status & AlarmBit;
+}
+
 
 void Alarm_Clear(u16 AlarmBit)
 {
@@ -304,7 +301,7 @@ void Alarm_ClearIso(u16 State)
  *==========================================================*/
 void Alarm_SetFwdSD(FWD_SD_STATE_t State)
 {
-    gAlarm.FwdSDState |= State;
+    gAlarm.FwdSDState = State;
     Alarm_Set(ALARM_BIT_FWD_SD);
 
 }
@@ -316,7 +313,7 @@ void Alarm_SetFwdSD(FWD_SD_STATE_t State)
 
 void Alarm_SetRevSD(REV_SD_STATE_t State)
 {
-    gAlarm.RevSDState |= State;
+    gAlarm.RevSDState = State;
     Alarm_Set(ALARM_BIT_REV_SD);
 }
 

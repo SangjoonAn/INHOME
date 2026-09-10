@@ -11,6 +11,7 @@
 #include "bsp_timer.h"
 #include "bsp_uart.h"
 #include "Alarm.h"
+#include "Osc.h"
 
 #define IsoPrint(...) do { if (IsoFlag) DebugPrint(__VA_ARGS__); } while (0)
 
@@ -82,6 +83,13 @@ void Iso_SetPwrInitFlag(u8 flag)
   IsoPwrInitFlag = flag;
   IsoState = ISO_STATE_IDLE;
 }
+
+u8 Iso_GetPwrInitFlag(void)
+{
+  return IsoPwrInitFlag;
+}
+
+
 
 void Iso_SetIsoReCheckFlag(u8 flag)
 {
@@ -173,6 +181,10 @@ void Iso_StateLimit(void)
 
   Iso_SetEnd();
 
+  if(Osc_GetStatusBit() == ON){
+    Osc_ClearStatusBit();
+  }
+
   if(iMySts.Flag2.Bit.IsoLimitRun == ON){
     iMySts.IsoMsg = ISO_MSG_LIMIT_RUN;
   }
@@ -207,7 +219,9 @@ void Iso_StateOk(void)
   
   Alarm_SetIso(ISO_77DB);
   
-
+  if(Osc_GetStatusBit() == ON){
+    Osc_ClearStatusBit();
+  }
 }
 
 void Iso_StateFail(void)

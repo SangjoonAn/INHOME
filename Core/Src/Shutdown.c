@@ -28,8 +28,8 @@ u8 RxShutdownDetCnt = 0;
 
 
 			          //30s, 5min,  60min
-u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={60, 600, 7200};	
-//u16 ShutdownHoldTime[SHUTDOWN_STEP_NUM]={7, 7, 7};	
+//u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={60, 600, 7200};	
+u16 ShutdownHoldTime[SHUTDOWN_STEP_NUM]={3,3,3};	
 // 과출력 감지시간
 u16 ShutdownCheckTime[SHUTDOWN_STEP_NUM]={6, 3, 3, 3};	
 

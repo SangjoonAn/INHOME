@@ -13,7 +13,6 @@
 #define ISO_MAX_ATT      34         // 17dB
 
 #define ISO_LIMIT_ATT_MAX   30      // 15dB
-
 #define ISO_LIMIT_ATT_MIN   4       // 2dB
 
 #define ISO_MSG_IDLE        0x00    // 미수행
@@ -51,6 +50,7 @@ void Iso_SetEnd(void);
 
 void Iso_SetPwrInitFlag(u8 flag);
 u8 Iso_GetIsoReCheckFlag(void);
+u8 Iso_GetPwrInitFlag(void);
 void Iso_SetIsoReCheckFlag(u8 flag);
 
 #endif /* INC_ISO_H_ */

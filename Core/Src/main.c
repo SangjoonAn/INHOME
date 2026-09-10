@@ -35,6 +35,7 @@
 #include "Alc.h"
 #include "iso.h"
 #include "Osc.h"
+#include "Shutdown.h"
 #include "bsp_debug.h"
 /* USER CODE END Includes */
 
@@ -142,6 +143,7 @@ int main(void)
     Alc_Task();
     Iso_Task();
     Osc_Task();
+    Shutdown_Task();
 
     Debug_Task();
 

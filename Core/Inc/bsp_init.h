@@ -10,8 +10,6 @@
 #define MAKER_FRTEK                     0x04
 #define MU_FW_VER    				    0x03
 
-
-
 #define INITCHECKNUM					0x01			
 
 
@@ -19,13 +17,19 @@
 
 #define ExtE2pMapSYSTEMSAVEVAR							0x0010				//1776byte
 
+#define RX_AMP_STATE  iMySts.Flag2.Bit.RxPath
+#define TX_AMP_STATE  iMySts.Flag2.Bit.TxPath
+
+#define RX_ALC_BIT    iMySts.Flag1.Bit.RxAlc
+#define TX_ALC_BIT    iMySts.Flag1.Bit.TxAlc
+
 void bsp_Init(void);
 void Led_StatusToggle(void);
 void Init_DataRestore(void);
 void Init_SwReset(void);
 void Init_ResetCheck(void);
 void DWT_DelayUs(uint32_t us);
-
+void Init_SetFactory(void);
 void Init_TxAmpOn(void);
 void Init_TxAmpOff(void);
 void Init_RxAmpOn(void);

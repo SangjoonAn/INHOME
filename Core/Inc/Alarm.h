@@ -228,6 +228,7 @@ void Alarm_Init(void);
 void Alarm_Task(void);
 
 void Alarm_Set(u16 AlarmBit);
+u16 Alarm_Get(u16 AlarmBit);
 void Alarm_Clear(u16 AlarmBit);
 void Alarm_SetIso(u16 AlarmBit);
 void Alarm_ClearIso(u16 AlarmBit);

@@ -34,6 +34,9 @@ void Atten_RxAtt3_OnOff(u8 Mode);
 void Atten_TxAtt1_OnOff(u8 Mode);
 void Atten_TxAtt2_OnOff(u8 Mode);
 void Atten_TxAtt3_OnOff(u8 Mode);
-void Atten_SetTxAtt(void);
-void Atten_SetRxAtt(u8 TargetAtten);
+void Atten_SetTxAtt(u8 val);
+void Atten_SetRxAtt(u8 TargetAtten, u8 val);
+
+void Atten_TestAtt(u8 TargetAtten, s8 TestAtt);
+
 #endif /* INC_ATTEN_H_ */

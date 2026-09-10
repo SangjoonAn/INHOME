@@ -459,18 +459,6 @@ EEPROM_Status_t I2C_EE_PageWrite( uint8_t *pBuffer, uint16_t WriteAddr, uint16_t
         return EEPROM_ERROR;
     }
  
-    status = HAL_I2C_IsDeviceReady(&EEPROM_I2C_HANDLE,
-                                EEPROM_ADDRESS,
-                                3,
-                                100);
-
-    DebugPrint("\r\n%d][I2C] IsDeviceReady "
-            "Dev=0x%02X status=%d err=0x%08lX",
-            HAL_GetTick(),
-            EEPROM_ADDRESS,
-            status,
-            (unsigned long)HAL_I2C_GetError(&EEPROM_I2C_HANDLE));
-
     /*
      * Perform one page write.
      */

@@ -8,7 +8,8 @@
 #ifndef INC_SHUTDOWN_H_
 #define INC_SHUTDOWN_H_
 
-#define SHUTDOWN_RECHECK_NUM        4
+#define SHUTDOWN_STEP_NUM           4
+#define SHUTDOWN_RECHECK_NUM        3
 
 #define SHUTDOWN_STATUS_FLAG		0x01
 #define SHUTDOWN_FOREVER_FLAG		0x02
@@ -17,5 +18,7 @@
 
 void Shutdown_TxCheck(void);
 void Shutdown_RxCheck(void);
+void Shutdown_TxClear(void);
+void Shutdown_RxClear(void);
 
 #endif /* INC_SHUTDOWN_H_ */

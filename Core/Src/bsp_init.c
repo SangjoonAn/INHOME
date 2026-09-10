@@ -12,6 +12,7 @@
 #include "gui.h"
 #include "bsp_led.h"
 #include "Iso.h"
+#include "Osc.h"
 
 #ifdef STM32F103
     #include "stm32f1xx.h"   // STM32F103
@@ -139,6 +140,7 @@ void Init_DataRestore(void)
     Alarm_Init();
     Alc_Init();
     Iso_Init();
+    Osc_Init();
 
     if(iMyCtrl.InitCheckNum!=INITCHECKNUM){
         iMyCtrl.InitCheckNum=INITCHECKNUM;			SystemDataItemWrite(iMyCtrl.InitCheckNum);
@@ -150,10 +152,15 @@ void Init_DataRestore(void)
 
     }
 
-    // 1.8, 900MHz에 따라 Gain 설정
-    //if(iMySts.SysFreq  == SYS_FREQ_900MHZ){
-    //    iMySts.SysFreq = SYS_FREQ_900MHZ;
-    //}
+    if(iMySts.SysFreq  == SYS_FREQ_900M){
+        iMySts.TxMaxGain = TX_900M_MAX_GAIN;
+        iMySts.RxMaxGain = RX_900M_MAX_GAIN;
+    }
+    else{
+        iMySts.TxMaxGain = TX_18G_MAX_GAIN;
+        iMySts.RxMaxGain = RX_18G_MAX_GAIN;
+    }
+    
 
 
     DebugPrint("\r\n %d][INIT] InitCheckNum = %x", HAL_GetTick(),iMyCtrl.InitCheckNum );
@@ -218,4 +225,18 @@ void Init_RxAmpOff(void)
 {
 	HAL_GPIO_WritePin(RX_AMP_ONOFF_GPIO_Port, RX_AMP_ONOFF_Pin, OFF);
     iMySts.Flag2.Bit.RxPath = OFF;
+}
+
+
+void Init_AllAmpOff(void)
+{
+    Init_TxAmpOff();
+    Init_RxAmpOff();
+}
+
+
+void Init_AllAmpOn(void)
+{
+    Init_TxAmpOn();
+    Init_RxAmpOn();
 }

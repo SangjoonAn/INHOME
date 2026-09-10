@@ -51,7 +51,7 @@ void Alc_SetTx(void)
             }
 
             if(PreAlcAtt != iMySts.TxAlcAtt){
-                Atten_SetTxAtt();
+                Atten_SetTxAtt(iMySts.TxAlcAtt);
                 AlcPrint("\r\n %d][ALC] Atten_SetTxAtt = %d", HAL_GetTick(), iMySts.TxAlcAtt);
                 PreAlcAtt = iMySts.TxAlcAtt;
             }
@@ -67,7 +67,7 @@ void Alc_SetTx(void)
             }
 
             if(PreAlcAtt != iMySts.TxAlcAtt){
-                Atten_SetTxAtt();
+                Atten_SetTxAtt(iMySts.TxAlcAtt);
                 AlcPrint("\r\n %d][ALC] Atten_SetTxAtt = %d", HAL_GetTick(), iMySts.TxAlcAtt);
                 PreAlcAtt = iMySts.TxAlcAtt;
             }
@@ -97,7 +97,7 @@ void Alc_SetRx(void)
             }
 
             if(PreAlcAtt != iMySts.RxAlcAtt){
-                Atten_SetRxAtt(RX_ATT1);
+                Atten_SetRxAtt(RX_ATT1, iMySts.RxAlcAtt);
                 AlcPrint("\r\n %d][ALC] Atten_SetRxAtt = %d", HAL_GetTick(), iMySts.RxAlcAtt);
                 PreAlcAtt = iMySts.RxAlcAtt;
             }
@@ -113,7 +113,7 @@ void Alc_SetRx(void)
             }
 
             if(PreAlcAtt != iMySts.RxAlcAtt){
-                Atten_SetRxAtt(RX_ATT1);
+                Atten_SetRxAtt(RX_ATT1, iMySts.RxAlcAtt);
                 AlcPrint("\r\n %d][ALC] Atten_SetRxAtt = %d", HAL_GetTick(), iMySts.RxAlcAtt);
                 PreAlcAtt = iMySts.RxAlcAtt;
             }

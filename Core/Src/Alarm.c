@@ -106,6 +106,10 @@ void Alarm_Save(void)
 
         if (gAlarm.Status & ALARM_BIT_FWD_SD)
         {
+            if(gAlarm.FwdSDState == FWD_SD_RECOVERY){
+                DebugPrint("\r\n %d][ALARM] Alarm_Save FWD_SD_RECOVERY ", HAL_GetTick());
+                return;
+            }
             gAlarm.FwdSDCount++;
             Alarm_CountSave(ALARM_COUNT_INDEX_FWD_SD);
             Alarm_LogSave(Alarm_GetCode(ALARM_BIT_FWD_SD));
@@ -113,6 +117,10 @@ void Alarm_Save(void)
 
         if (gAlarm.Status & ALARM_BIT_REV_SD)
         {
+            if(gAlarm.RevSDState == REV_SD_RECOVERY){
+                DebugPrint("\r\n %d][ALARM] Alarm_Save FWD_SD_RECOVERY ", HAL_GetTick());
+                return;
+            }
             gAlarm.RevSDCount++;
             Alarm_CountSave(ALARM_COUNT_INDEX_REV_SD);
             Alarm_LogSave(Alarm_GetCode(ALARM_BIT_REV_SD));
@@ -196,6 +204,15 @@ u16 Alarm_GetCode(u16 AlarmBit)
     if (AlarmBit & ALARM_BIT_ISO){
         switch (gAlarm.IsoState)
         {
+            case ISO_77DB:
+                return ALARM_CODE_ISO_77DB;
+
+            case ISO_76DB:
+                return ALARM_CODE_ISO_76DB;
+
+            case ISO_75DB:
+                return ALARM_CODE_ISO_75DB;
+
             case ISO_74DB:
                 return ALARM_CODE_ISO_74DB;
 
@@ -235,15 +252,6 @@ u16 Alarm_GetCode(u16 AlarmBit)
             case ISO_62DB:
                 return ALARM_CODE_ISO_62DB;
 
-            case ISO_61DB:
-                return ALARM_CODE_ISO_61DB;
-
-            case ISO_60DB:
-                return ALARM_CODE_ISO_60DB;
-
-            case ISO_59DB:
-                return ALARM_CODE_ISO_59DB;
-
             case ISO_FAIL:
                 return ALARM_CODE_ISO_FAIL;
 
@@ -253,10 +261,7 @@ u16 Alarm_GetCode(u16 AlarmBit)
     }
 
     if (AlarmBit & ALARM_BIT_OSC){
-        if (gAlarm.Status & ALARM_BIT_OSC)
-        {
-            return ALARM_CODE_OSC;
-        }
+        return ALARM_CODE_OSC;
     }
 
 
@@ -281,10 +286,17 @@ void Alarm_Clear(u16 AlarmBit)
 }
 
 
-u8 Alarm_IsSet(u16 AlarmBit)
+void Alarm_SetIso(u16 State)
 {
-    return ((gAlarm.Status & AlarmBit) != 0U);
+    gAlarm.IsoState = State;
+    Alarm_Set(ALARM_BIT_ISO);
 }
+
+void Alarm_ClearIso(u16 State)
+{
+    gAlarm.IsoState = 0;
+}
+
 
 
 /*===========================================================
@@ -292,16 +304,9 @@ u8 Alarm_IsSet(u16 AlarmBit)
  *==========================================================*/
 void Alarm_SetFwdSD(FWD_SD_STATE_t State)
 {
-    gAlarm.FwdSDState = State;
+    gAlarm.FwdSDState |= State;
+    Alarm_Set(ALARM_BIT_FWD_SD);
 
-    if (State != FWD_SD_NONE)
-    {
-        gAlarm.Status |= ALARM_BIT_FWD_SD;
-    }
-    else
-    {
-        gAlarm.Status &= ~ALARM_BIT_FWD_SD;
-    }
 }
 
 
@@ -311,35 +316,8 @@ void Alarm_SetFwdSD(FWD_SD_STATE_t State)
 
 void Alarm_SetRevSD(REV_SD_STATE_t State)
 {
-    gAlarm.RevSDState = State;
-
-    if (State != REV_SD_NONE)
-    {
-        gAlarm.Status |= ALARM_BIT_REV_SD;
-    }
-    else
-    {
-        gAlarm.Status &= ~ALARM_BIT_REV_SD;
-    }
-}
-
-
-/*===========================================================
- * Isolation
- *==========================================================*/
-
-void Alarm_SetISO(ISO_STATE_t State)
-{
-    gAlarm.IsoState = State;
-
-    if (State != ISO_NONE)
-    {
-        gAlarm.Status |= ALARM_BIT_ISO;
-    }
-    else
-    {
-        gAlarm.Status &= ~ALARM_BIT_ISO;
-    }
+    gAlarm.RevSDState |= State;
+    Alarm_Set(ALARM_BIT_REV_SD);
 }
 
 

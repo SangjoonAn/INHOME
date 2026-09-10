@@ -32,10 +32,11 @@ static const ATT_EN_GPIO_t AttEnGpio[] =
 };
 
 
-void Atten_SetTxAtt(void)
+void Atten_SetTxAtt(u8 val)
 {
     u8  bTemp = 0;
     s8  SubAtten;
+    u8  Atten;
     s8  Offset;
 
     if (iMySts.Test_ModeAtt == ON) return;
@@ -54,23 +55,27 @@ void Atten_SetTxAtt(void)
     if (SubAtten < SUB_ATT_MIN_NUM) SubAtten = SUB_ATT_MIN_NUM;      
     if (SubAtten > SUB_ATT_MAX_NUM) SubAtten = SUB_ATT_MAX_NUM;
         
-    if (iMySts.TxAlcAtt > TX_ATT_MAX_NUM) iMySts.TxAlcAtt = RX_ATT_MAX_NUM;
-    SubAtten += iMySts.TxAlcAtt;
+    //if (iMySts.TxAlcAtt > TX_ATT_MAX_NUM) iMySts.TxAlcAtt = RX_ATT_MAX_NUM;
+    if (val > TX_ATT_MAX_NUM) val = RX_ATT_MAX_NUM;
+    iMySts.TxAlcAtt = val;
+    Atten = iMySts.TxAlcAtt + SubAtten;
 
     /* ATT Offset */
-    bTemp = Table_GetAttOffset( SubAtten,TABLE_IDX_TX_GAIN_ATT);
+    //bTemp = Table_GetAttOffset( SubAtten,TABLE_IDX_TX_GAIN_ATT);
 
     /* ATT 범위 제한 */
+    bTemp = Atten;
     if (bTemp > ATT_MAX_NUM) bTemp = ATT_MAX_NUM;
     Atten_SendProc(bTemp, TX_ATT1);
 }
 
 
 
-void Atten_SetRxAtt(u8 TargetAtten)
+void Atten_SetRxAtt(u8 TargetAtten, u8 val)
 {
     u8  bTemp = 0;
     s8  SubAtten;
+    u8  Atten;
     s8  Offset;
 
     if (iMySts.Test_ModeAtt == ON) return;
@@ -92,23 +97,31 @@ void Atten_SetRxAtt(u8 TargetAtten)
     /* Target별 추가 ATT */
     if (TargetAtten == RX_ATT1)
     {
-        if (iMySts.RxAlcAtt > RX_ATT_MAX_NUM) iMySts.RxAlcAtt = RX_ATT_MAX_NUM;
-        SubAtten += iMySts.RxAlcAtt;
+        //if (iMySts.RxAlcAtt > RX_ATT_MAX_NUM) iMySts.RxAlcAtt = RX_ATT_MAX_NUM;
+        if (val > RX_ATT_MAX_NUM) val = RX_ATT_MAX_NUM;
+        iMySts.RxAlcAtt = val;
+        Atten = SubAtten + iMySts.RxAlcAtt;
+        AttPrint("\r\n %d][ATT] Atten(%d) = SubAtten(%d) + AlcAtt(%d)", HAL_GetTick(), Atten, SubAtten, iMySts.RxAlcAtt);
     }
     else if (TargetAtten == RX_ATT2)
     {
-        if (iMySts.IsoAtt > RX_ATT_MAX_NUM) iMySts.IsoAtt = RX_ATT_MAX_NUM;
-        SubAtten += iMySts.IsoAtt;
+        //if (iMySts.IsoAtt > RX_ATT_MAX_NUM) iMySts.IsoAtt = RX_ATT_MAX_NUM;
+        if (val > RX_ATT_MAX_NUM) val = RX_ATT_MAX_NUM;
+        iMySts.IsoAtt = val;
+        Atten = SubAtten + iMySts.RxAlcAtt;
+        AttPrint("\r\n %d][ATT] Atten(%d) = SubAtten(%d) + IsoAtt(%d)", HAL_GetTick(), Atten, SubAtten, iMySts.IsoAtt);
     }
     else
     {
+        AttPrint("\r\n %d][ATT][ERR] Another TargetAtten ", HAL_GetTick());
         return;
     }
 
-    /* ATT Offset */
-    Offset = Table_GetAttOffset( SubAtten,TABLE_IDX_TX_GAIN_ATT);
+    /* ATT Offset 필요시 추가 */
+    //Offset = Table_GetAttOffset(SubAtten,TABLE_IDX_TX_GAIN_ATT);
+    //bTemp = (u8)(SubAtten + Offset);
 
-    bTemp = (u8)(SubAtten + Offset);
+    bTemp = Atten;
 
     /* ATT 범위 제한 */
     if (bTemp > ATT_MAX_NUM) bTemp = ATT_MAX_NUM;

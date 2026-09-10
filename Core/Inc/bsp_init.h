@@ -30,5 +30,6 @@ void Init_TxAmpOn(void);
 void Init_TxAmpOff(void);
 void Init_RxAmpOn(void);
 void Init_RxAmpOff(void);
-
+void Init_AllAmpOff(void);
+void Init_AllAmpOn(void);
 #endif

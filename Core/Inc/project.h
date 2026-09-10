@@ -4,6 +4,15 @@
 
 #include "common.h"
 
+#define SYS_FREQ_900M       0
+#define SYS_FREQ_18G        1
+
+
+#define TX_900M_MAX_GAIN    114     // 57dB
+#define RX_900M_MAX_GAIN    114
+
+#define TX_18G_MAX_GAIN     120      //60dB
+#define RX_18G_MAX_GAIN     120
 
 extern u32 gCurTimerTick;
 
@@ -335,7 +344,7 @@ typedef struct
     u8 SysFreq;
     s16 IsoThreshold;
     u8 InitCheckNum;
-    u8 Reserved39[52];
+    u8 Reserved49[49];
 
     union 
     { 

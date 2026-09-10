@@ -80,9 +80,10 @@ void PowerDet_Update(void)
     Table_SetAdResult(ADC_NUM_RX_DET, AdResult);   
     iMySts.RxOutputPower = Table_GetMeanData(ADC_NUM_RX_DET) + iMySts.RxPowerOffsetOutput;
 
-    //TxInputPower 계산할것.
+    iMySts.RxGain = iMySts.RxMaxGain - iMySts.RxAlcAtt;
+    iMySts.TxGain = iMySts.TxMaxGain - iMySts.TxAlcAtt;
 
-
+    iMySts.TxInputPower =  -(iMySts.RxOutputPower - (iMySts.RxGain * 5));
 }
 
 

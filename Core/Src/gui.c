@@ -6,6 +6,8 @@
 #include "utils.h"
 #include "Alarm.h"
 #include "Down.h"
+#include "Atten.h"
+#include "Iso.h"
 
 GUI_DEV_t GuiProtoDev1, *pGuiProtoDev1;
 static UART_DEV_t  uart1_device = {BSP_UART1_RxDataExist,	BSP_UART1_GetChar, BSP_UART1_Write};
@@ -170,7 +172,7 @@ void GUI_ParserMessage(u8 *pRxMsg, u16 RxLen)
     //DebugPrint("\r\n %d][GUI] GUI_ParserMessage BodyLen : %d, RxLen : %d, pLine->SubLen %d", HAL_GetTick(), pLine->BodyLen, RxLen, pLine->SubLen);
 
 	if(pLine->Cmd==CMD_MAIN_STATUS){
-		DebugPrint("\r\n %d][GUI] CMD_MAIN_STATUS", HAL_GetTick());
+		//DebugPrint("\r\n %d][GUI] CMD_MAIN_STATUS", HAL_GetTick());
         Gui_SendStatusMessage(pRxMsg);
         return;
 	}		
@@ -290,6 +292,7 @@ void Gui_SendControlMessage(u8 *pRxMsg)
         if(pCtrl->Flag1.Bit.IsoReCheck){
             iMyCtrl.IsoReCheck = pCtrl->IsoReCheck;
             SystemDataItemWrite(iMyCtrl.IsoReCheck);
+            Iso_SetIsoReCheckFlag(ON);
             iMySts.Flag2.Bit.IsoReCheck = iMyCtrl.IsoReCheck;
             DebugPrint("\r\n %d][GUI] IsoReCheck set to %d", HAL_GetTick(), iMyCtrl.IsoReCheck);
         }
@@ -519,24 +522,38 @@ void Gui_SendControlMessage(u8 *pRxMsg)
             iMyCtrl.Test_TxAtt1 = pCtrl->Test_TxAtt1;
             SystemDataItemWrite(iMyCtrl.Test_TxAtt1);
             iMySts.Test_TxAtt1 = iMyCtrl.Test_TxAtt1;
+            Atten_TestAtt(TX_ATT1, iMySts.Test_TxAtt1);
             DebugPrint("\r\n %d][GUI] Test_TxAtt1 set to %d", HAL_GetTick(), iMyCtrl.Test_TxAtt1);
         }
         if(pCtrl->Flag8.Bit.Test_RxAtt1){
             iMyCtrl.Test_RxAtt1 = pCtrl->Test_RxAtt1;
             SystemDataItemWrite(iMyCtrl.Test_RxAtt1);
             iMySts.Test_RxAtt1 = iMyCtrl.Test_RxAtt1;
+            Atten_TestAtt(RX_ATT1, iMySts.Test_RxAtt1);
             DebugPrint("\r\n %d][GUI] Test_RxAtt1 set to %d", HAL_GetTick(), iMyCtrl.Test_RxAtt1);
         }
         if(pCtrl->Flag8.Bit.Test_RxAtt2){
             iMyCtrl.Test_RxAtt2 = pCtrl->Test_RxAtt2;
             SystemDataItemWrite(iMyCtrl.Test_RxAtt2);
             iMySts.Test_RxAtt2 = iMyCtrl.Test_RxAtt2;
+            Atten_TestAtt(RX_ATT2, iMySts.Test_RxAtt2);
             DebugPrint("\r\n %d][GUI] Test_RxAtt2 set to %d", HAL_GetTick(), iMyCtrl.Test_RxAtt2);
         }
         if(pCtrl->Flag8.Bit.SysFreq){
             iMyCtrl.SysFreq = pCtrl->SysFreq;
             SystemDataItemWrite(iMyCtrl.SysFreq);
             iMySts.SysFreq = iMyCtrl.SysFreq;
+            //GUI로 주파수 변경시 Gain값 계산 필요, Iso Limit인경우 MaxGain 계산 확인
+            if(iMySts.SysFreq  == SYS_FREQ_900M){
+                iMySts.TxMaxGain = TX_900M_MAX_GAIN;
+                iMySts.RxMaxGain = RX_900M_MAX_GAIN;
+            }
+            else{
+                iMySts.TxMaxGain = TX_18G_MAX_GAIN;
+                iMySts.RxMaxGain = RX_18G_MAX_GAIN;
+            }
+
+            Iso_CalGain();
             DebugPrint("\r\n %d][GUI] SysFreq set to %d", HAL_GetTick(), iMyCtrl.SysFreq);
         }
         if(pCtrl->Flag8.Bit.IsoThreshold){

@@ -10,8 +10,11 @@
 
 #include "project.h"
 
-#define RX_MAX_GAIN    50
-#define ISO_MAX_ATT      17
+#define ISO_MAX_ATT      34         // 17dB
+
+#define ISO_LIMIT_ATT_MAX   30      // 15dB
+
+#define ISO_LIMIT_ATT_MIN   4       // 2dB
 
 #define ISO_MSG_IDLE        0x00    // 미수행
 #define ISO_MSG_LIMIT       0x01    // 제한 확보
@@ -36,8 +39,15 @@ typedef enum
 void Iso_Init(void);
 void Iso_Task(void);
 void Iso_Check(void);
-
-void Iso_SetPwrInitFlag(u8 flag);
+void Iso_CheckTimeout(void);
+void Iso_StateUeCheck(void);
+void Iso_StateCheck(void);
+void Iso_StateIdle(void);
+void Iso_StateLimit(void);
+void Iso_StateOk(void);
+void Iso_StateFail(void);
+void Iso_CalGain(void);
+void Iso_SetEnd(void);
 
 void Iso_SetPwrInitFlag(u8 flag);
 u8 Iso_GetIsoReCheckFlag(void);

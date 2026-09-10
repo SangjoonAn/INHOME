@@ -16,15 +16,22 @@
 
 u8 ShutdownFlag = 0;
 
-
 u8 TxShutdown_Status = 0;
-u8 Shutdown_Recovery_Num = 3;
+u8 TxShutdownStep = 0;
+u16 TxShutdownCheckCnt = 0;
+u8 TxShutdownDetCnt = 0;
+
+u8 RxShutdown_Status = 0;
+u8 RxShutdownStep = 0;
+u16 RxShutdownCheckCnt = 0;
+u8 RxShutdownDetCnt = 0;
+
 
 			          //30s, 5min,  60min
-u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={60, 600, 7200, 0};	
-//u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={7, 7, 7};	
+u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={60, 600, 7200};	
+//u16 ShutdownHoldTime[SHUTDOWN_STEP_NUM]={7, 7, 7};	
 // 과출력 감지시간
-u16 ShutdownCheckTime[SHUTDOWN_RECHECK_NUM]={6, 3, 3, 3};	
+u16 ShutdownCheckTime[SHUTDOWN_STEP_NUM]={6, 3, 3, 3};	
 
 void Shutdown_Init(void)
 {
@@ -43,9 +50,7 @@ void Shutdown_Task(void)
 
 void Shutdown_TxCheck(void)
 {
-    static u8 step = 0;
-    static u16 RecheckCnt = 0;
-    static u8  ShutdownDetectCnt = 0;
+
 
     if(iMySts.Flag1.Bit.TxShutdown == ON){
 
@@ -54,46 +59,144 @@ void Shutdown_TxCheck(void)
         }
 
         if(TxShutdown_Status & TX_SHUTDOWN_FLAG){
-            if(step > 0 && step <= 3){
-                if(++RecheckCnt >= ShutdownHoldTime[step-1]){
-                    RecheckCnt = 0;
+            if(TxShutdownStep > 0 && TxShutdownStep <= SHUTDOWN_RECHECK_NUM){
+                if(++TxShutdownCheckCnt >= ShutdownHoldTime[TxShutdownStep-1]){
+                    TxShutdownCheckCnt = 0;
                     TxShutdown_Status&=~TX_SHUTDOWN_FLAG;
-                    ShutdownPrint("\r\n %d][SHUTDOWN] Shutdown Amp On, step=%d, Holdtime=%d", HAL_GetTick(), step, ShutdownHoldTime[step-1]);
+                    iMySts.Alarm.Bit.TxShutdownAlarm = OFF;
+                    ShutdownPrint("\r\n %d][SHUTDOWN]Tx Shutdown Amp On, TxShutdownStep=%d, Holdtime=%d", HAL_GetTick(), TxShutdownStep, ShutdownHoldTime[TxShutdownStep-1]);
                     Init_TxAmpOn();
+                    Alarm_SetFwdSD(FWD_SD_RECOVERY);                    
                 }
 
             }
         }
         else if(iMySts.TxOutputPower > iMySts.TxShutdownLimit){
             
-            if(++ShutdownDetectCnt  >= ShutdownCheckTime[step]){
+            if(++TxShutdownDetCnt  >= ShutdownCheckTime[TxShutdownStep]){
                 LED_TX_SHUTDOWN_ON;
-                ShutdownDetectCnt  = 0;
-                Alarm_Set(ALARM_BIT_FWD_SD);
+                TxShutdownDetCnt  = 0;             
                 Init_TxAmpOff();
 
-                if(step >= Shutdown_Recovery_Num){
+                if(TxShutdownStep >= SHUTDOWN_STEP_NUM){
+                    Alarm_SetFwdSD(FWD_SD_END);
                     TxShutdown_Status |= SHUTDOWN_FOREVER_FLAG;
-                    step = 0;
-                    ShutdownPrint("\r\n %d][SHUTDOWN] SHUTDOWN FOREVER", HAL_GetTick());
+                    TxShutdownStep = 0;
+                    ShutdownPrint("\r\n %d][SHUTDOWN]Tx SHUTDOWN FOREVER", HAL_GetTick());
                 }
                 else{
-                    ShutdownPrint("\r\n %d][SHUTDOWN] Shutdown Amp Off, step=%d, Checktime=%d", HAL_GetTick(), step, ShutdownCheckTime[step]);
+                    if(TxShutdownStep == 0){
+                        Alarm_SetFwdSD(FWD_SD_1ST);
+                    }
+                    else if(TxShutdownStep == 1){
+                        Alarm_SetFwdSD(FWD_SD_2ND);
+                    }
+                    else if(TxShutdownStep == 2){
+                        Alarm_SetFwdSD(FWD_SD_3RD);
+                    }
+                    else{
+                        ShutdownPrint("\r\n %d][SHUTDOWN][ERR] Tx Shutdown Step Error, TxShutdownStep=%d, Checktime=%d", HAL_GetTick(), TxShutdownStep, ShutdownCheckTime[TxShutdownStep]);
+                        TxShutdownStep = 0;
+                    }
+                    
+                    ShutdownPrint("\r\n %d][SHUTDOWN]Tx Shutdown Amp Off, TxShutdownStep=%d, Checktime=%d", HAL_GetTick(), TxShutdownStep, ShutdownCheckTime[TxShutdownStep]);
                     TxShutdown_Status |= TX_SHUTDOWN_FLAG;
-                    RecheckCnt  = 0;
-                    step++;
+                    TxShutdownCheckCnt  = 0;
+                    TxShutdownStep++;
                 }
+                iMySts.Alarm.Bit.TxShutdownAlarm = ON;
 
             }
         }
         else{
-            ShutdownDetectCnt = 0;
+            Shutdown_TxClear();
         }
     }
 
 }
 
+
+
 void Shutdown_RxCheck(void)
 {
 
+    if(iMySts.Flag1.Bit.RxShutdown == ON){
+
+        if(RxShutdown_Status & SHUTDOWN_FOREVER_FLAG){
+            return;
+        }
+
+        if(RxShutdown_Status & RX_SHUTDOWN_FLAG){
+            if(RxShutdownStep > 0 && RxShutdownStep <= SHUTDOWN_RECHECK_NUM){
+                if(++RxShutdownCheckCnt >= ShutdownHoldTime[RxShutdownStep-1]){
+                    RxShutdownCheckCnt = 0;
+                    RxShutdown_Status&=~RX_SHUTDOWN_FLAG;
+                    iMySts.Alarm.Bit.RxShutdownAlarm = OFF;
+                    ShutdownPrint("\r\n %d][SHUTDOWN]Rx Shutdown Amp On, RxShutdownStep=%d, Holdtime=%d", HAL_GetTick(), RxShutdownStep, ShutdownHoldTime[RxShutdownStep-1]);
+                    Init_RxAmpOn();
+                    Alarm_SetRevSD(REV_SD_RECOVERY);
+                }
+
+            }
+        }
+        else if(iMySts.RxOutputPower > iMySts.RxShutdownLimit){
+            
+            if(++RxShutdownDetCnt  >= ShutdownCheckTime[RxShutdownStep]){
+                LED_RX_SHUTDOWN_ON;
+                RxShutdownDetCnt  = 0;
+                Init_RxAmpOff();
+
+                if(RxShutdownStep >= SHUTDOWN_STEP_NUM){
+                    Alarm_SetRevSD(REV_SD_END);
+                    RxShutdown_Status |= SHUTDOWN_FOREVER_FLAG;
+                    RxShutdownStep = 0;
+                    ShutdownPrint("\r\n %d][SHUTDOWN]Rx SHUTDOWN FOREVER", HAL_GetTick());
+                }
+                else{
+                    if(RxShutdownStep == 0){
+                        Alarm_SetRevSD(REV_SD_1ST);
+                    }
+                    else if(RxShutdownStep == 1){
+                        Alarm_SetRevSD(REV_SD_2ND);
+                    }
+                    else if(RxShutdownStep == 2){
+                        Alarm_SetRevSD(REV_SD_3RD);
+                    }
+                    else{
+                        ShutdownPrint("\r\n %d][SHUTDOWN][ERR] Rx Shutdown Step Error, RxShutdownStep=%d, Checktime=%d", HAL_GetTick(), RxShutdownStep, ShutdownCheckTime[RxShutdownStep]);
+                        RxShutdownStep = 0;
+                    }
+                    
+                    ShutdownPrint("\r\n %d][SHUTDOWN]Rx Shutdown Amp Off, RxShutdownStep=%d, Checktime=%d", HAL_GetTick(), RxShutdownStep, ShutdownCheckTime[RxShutdownStep]);
+                    RxShutdown_Status |= RX_SHUTDOWN_FLAG;
+                    RxShutdownCheckCnt  = 0;
+                    RxShutdownStep++;
+                }
+                iMySts.Alarm.Bit.RxShutdownAlarm = ON;
+
+            }
+        }
+        else{
+            Shutdown_RxClear();           
+        }
+    }
+
+}
+
+void Shutdown_TxClear(void)
+{
+    TxShutdown_Status = 0;
+    TxShutdownStep = 0;
+    TxShutdownCheckCnt = 0;
+    TxShutdownDetCnt = 0;
+    iMySts.Alarm.Bit.TxShutdownAlarm = OFF;
+}
+
+void Shutdown_RxClear(void)
+{
+    RxShutdown_Status = 0;
+    RxShutdownStep = 0;
+    RxShutdownCheckCnt = 0;
+    RxShutdownDetCnt = 0;
+    iMySts.Alarm.Bit.RxShutdownAlarm = OFF;
 }

@@ -90,24 +90,25 @@
 #define ALARM_CODE_OSC              0x11U
 
 /* Isolation */
-#define ALARM_CODE_ISO_74DB          0x12U
-#define ALARM_CODE_ISO_73DB          0x13U
-#define ALARM_CODE_ISO_72DB          0x14U
-#define ALARM_CODE_ISO_71DB          0x15U
-#define ALARM_CODE_ISO_70DB          0x16U
-#define ALARM_CODE_ISO_69DB          0x17U
-#define ALARM_CODE_ISO_68DB          0x18U
-#define ALARM_CODE_ISO_67DB          0x19U
-#define ALARM_CODE_ISO_66DB          0x1AU
-#define ALARM_CODE_ISO_65DB          0x1BU
-#define ALARM_CODE_ISO_64DB          0x1CU
-#define ALARM_CODE_ISO_63DB          0x1DU
-#define ALARM_CODE_ISO_62DB          0x1EU
-#define ALARM_CODE_ISO_61DB          0x1FU
-#define ALARM_CODE_ISO_60DB          0x20U
-#define ALARM_CODE_ISO_59DB          0x21U
+#define ALARM_CODE_ISO_77DB          0x12U
+#define ALARM_CODE_ISO_76DB          0x13U
+#define ALARM_CODE_ISO_75DB          0x14U
+#define ALARM_CODE_ISO_74DB          0x15U
+#define ALARM_CODE_ISO_73DB          0x16U
+#define ALARM_CODE_ISO_72DB          0x17U
+#define ALARM_CODE_ISO_71DB          0x18U
+#define ALARM_CODE_ISO_70DB          0x19U
+#define ALARM_CODE_ISO_69DB          0x1AU
+#define ALARM_CODE_ISO_68DB          0x1BU
+#define ALARM_CODE_ISO_67DB          0x1CU
+#define ALARM_CODE_ISO_66DB          0x1DU
+#define ALARM_CODE_ISO_65DB          0x1EU
+#define ALARM_CODE_ISO_64DB          0x1FU
+#define ALARM_CODE_ISO_63DB          0x20U
+#define ALARM_CODE_ISO_62DB          0x21U
 #define ALARM_CODE_ISO_FAIL          0x22U
 
+#define ALARM_CODE_ISO_OFFSET        0x3BU
 
 /*===========================================================
  * Runtime Alarm Bitmap
@@ -164,7 +165,9 @@ typedef enum
 
 typedef enum
 {
-    ISO_NONE = 0,
+    ISO_77DB = 0,
+    ISO_76DB,
+    ISO_75DB,
     ISO_74DB,
     ISO_73DB,
     ISO_72DB,
@@ -178,9 +181,6 @@ typedef enum
     ISO_64DB,
     ISO_63DB,
     ISO_62DB,
-    ISO_61DB,
-    ISO_60DB,
-    ISO_59DB,
     ISO_FAIL
 } ISO_STATE_t;
 
@@ -229,11 +229,11 @@ void Alarm_Task(void);
 
 void Alarm_Set(u16 AlarmBit);
 void Alarm_Clear(u16 AlarmBit);
-u8   Alarm_IsSet(u16 AlarmBit);
+void Alarm_SetIso(u16 AlarmBit);
+void Alarm_ClearIso(u16 AlarmBit);
 
 void Alarm_SetFwdSD(FWD_SD_STATE_t State);
 void Alarm_SetRevSD(REV_SD_STATE_t State);
-void Alarm_SetISO(ISO_STATE_t State);
 
 void Alarm_LogSave(u8 AlarmCode);
 

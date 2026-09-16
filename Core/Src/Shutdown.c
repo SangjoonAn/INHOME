@@ -29,9 +29,9 @@ u8 RxShutdownDetCnt = 0;
 
 			          //30s, 5min,  60min
 //u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={60, 600, 7200};	
-u16 ShutdownHoldTime[SHUTDOWN_STEP_NUM]={3,3,3};	
-// 과출력 감지시간
+u16 ShutdownHoldTime[SHUTDOWN_RECHECK_NUM]={3,3,3};	
 u16 ShutdownCheckTime[SHUTDOWN_STEP_NUM]={6, 3, 3, 3};	
+// 과출력 감지시간
 
 void Shutdown_Init(void)
 {
@@ -77,7 +77,7 @@ void Shutdown_TxCheck(void)
                     TxShutdownDetCnt  = 0;             
                     Init_TxAmpOff();
 
-                    if(TxShutdownStep >= SHUTDOWN_STEP_NUM){
+                    if(TxShutdownStep >= SHUTDOWN_RECHECK_NUM){
                         Alarm_SetFwdSD(FWD_SD_END);
                         TxShutdown_Status |= SHUTDOWN_FOREVER_FLAG;
                         TxShutdownStep = 0;
@@ -147,7 +147,7 @@ void Shutdown_RxCheck(void)
                     RxShutdownDetCnt  = 0;
                     Init_RxAmpOff();
 
-                    if(RxShutdownStep >= SHUTDOWN_STEP_NUM){
+                    if(RxShutdownStep >= SHUTDOWN_RECHECK_NUM){
                         Alarm_SetRevSD(REV_SD_END);
                         RxShutdown_Status |= SHUTDOWN_FOREVER_FLAG;
                         RxShutdownStep = 0;

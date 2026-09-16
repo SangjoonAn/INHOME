@@ -33,7 +33,7 @@ void Alc_Task(void)
     if(bsp_timer_TimeOverCheck(TimerRxAlcCheck)){
         Alc_SetRx();
         bsp_timer_set(TimerRxAlcCheck, Time500mSec);
-    }	
+    }
 }
 
 void Alc_SetTx(void)

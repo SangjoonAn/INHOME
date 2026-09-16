@@ -138,7 +138,7 @@ void Atten_TestAtt(u8 TargetAtten, s8 TestAtt)
 
     AttPrint("\r\n Test Att: %d[dB]", TestAtt);
 
-    bTemp = (u8)(TestAtt * 2);
+    bTemp = (u8)(TestAtt);
 
     if (bTemp > ATT_MAX_NUM)
         bTemp = ATT_MAX_NUM;

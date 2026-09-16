@@ -146,18 +146,18 @@ void Atten_TestAtt(u8 TargetAtten, s8 TestAtt)
     Atten_SendProc(bTemp, TargetAtten);
 }
 
-void Atten_SendProc(u8 SerialData8Bit, u8 TargetAtten)
+void Atten_SendProc(u8 SerialData6Bit, u8 TargetAtten)
 {
     u8 i;
 
     if (TargetAtten >= ATT_MAX_CNT)
         return;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 6; i++)
     {
         Atten_ClockOnOff(0);
 
-        if (SerialData8Bit & 0x01)
+        if (SerialData6Bit & 0x01)
             Atten_DataOnOff(1);
         else
             Atten_DataOnOff(0);
@@ -167,7 +167,7 @@ void Atten_SendProc(u8 SerialData8Bit, u8 TargetAtten)
         Atten_ClockOnOff(1);
         Atten_ClockDelay();
 
-        SerialData8Bit >>= 1;
+        SerialData6Bit >>= 1;
     }
 
     Atten_ClockOnOff(0);

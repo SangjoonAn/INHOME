@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #define MAKER_FRTEK                     0x04
-#define MU_FW_VER    				    0x03
+#define MU_FW_VER    				    0x04
 
 #define INITCHECKNUM					0x01			
 

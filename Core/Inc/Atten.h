@@ -22,12 +22,12 @@
 #define SUB_ATT_MIN_NUM 0
 #define SUB_ATT_MAX_NUM 10
 
-#define ATT_MAX_NUM     127
+#define ATT_MAX_NUM     63
 
 void Atten_ClockOnOff(u8 Mode);
 void Atten_DataOnOff(u8 Mode);
 void Atten_ClockDelay(void);
-void Atten_SendProc(u8 SerialData8Bit, u8 TargetAtten);
+void Atten_SendProc(u8 SerialData6Bit, u8 TargetAtten);
 void Atten_RxAtt1_OnOff(u8 Mode);
 void Atten_RxAtt2_OnOff(u8 Mode);
 void Atten_RxAtt3_OnOff(u8 Mode);

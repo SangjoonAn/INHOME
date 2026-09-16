@@ -104,8 +104,8 @@ void Alc_SetRx(void)
                 PreAlcAtt = iMySts.RxAlcAtt;
             }
         }
-        else if(iMySts.TxAlcLowOffset > iMySts.RxOutputPower){
-            PowerDiff  = iMySts.RxOutputPower - iMySts.TxAlcLowOffset;
+        else if(iMySts.RxAlcLowOffset > iMySts.RxOutputPower){
+            PowerDiff  = iMySts.RxOutputPower - iMySts.RxAlcLowOffset;
 
             if(PowerDiff  < -10){
                 if(iMySts.RxAlcAtt > 0){
